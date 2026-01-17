@@ -1,58 +1,45 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // Явно указываем среду выполнения
 
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const shopId = process.env.YOOKASSA_SHOP_ID;
-  const secretKey = process.env.YOOKASSA_SECRET_KEY;
-
-  if (!shopId || !secretKey) {
-    return NextResponse.json({ error: "Ключи не настроены" }, { status: 500 });
-  }
-
   try {
-    const { amount, userId } = await req.json();
+    const shopId = process.env.YOOKASSA_SHOP_ID;
+    const secretKey = process.env.YOOKASSA_SECRET_KEY;
 
-    // Генерируем уникальный ключ идемпотентности (нужен для ЮKassa)
-    const idempotenceKey = crypto.randomUUID();
+    if (!shopId || !secretKey) {
+      return NextResponse.json({ error: "Config missing" }, { status: 500 });
+    }
 
-    // Прямой запрос к API ЮKassa через стандартный fetch
-    const response = await fetch('https://api.yookassa.ru', {
+    const body = await req.json();
+    const amount = body.amount;
+    const userId = body.userId;
+
+    const auth = Buffer.from(`${shopId}:${secretKey}`).toString('base64');
+
+    const res = await fetch('https://api.yookassa.ru', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`,
-        'Idempotence-Key': idempotenceKey,
+        'Authorization': `Basic ${auth}`,
+        'Idempotence-Key': crypto.randomUUID(),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: {
-          value: amount.toFixed(2),
-          currency: 'RUB',
-        },
-        confirmation: {
-          type: 'redirect',
-          return_url: 'https://vash-sait.ru', // ЗАМЕНИТЕ НА ВАШ ДОМЕН
+        amount: { value: Number(amount).toFixed(2), currency: 'RUB' },
+        confirmation: { 
+            type: 'redirect', 
+            return_url: 'https://storyvoter.vercel.app' // Укажите ваш адрес на vercel
         },
         capture: true,
-        description: `Пополнение баланса пользователя ${userId}`,
-        metadata: {
-          userId: userId,
-        },
+        description: `Пополнение ${userId}`,
+        metadata: { userId }
       }),
     });
 
-    const payment = await response.json();
-
-    if (!response.ok) {
-      throw new Error(payment.description || 'Ошибка ЮKassa');
-    }
-
-    return NextResponse.json({ 
-      confirmationUrl: payment.confirmation.confirmation_url 
-    });
-
-  } catch (error: any) {
-    console.error('PAY_ERROR:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const data = await res.json();
+    return NextResponse.json({ confirmationUrl: data.confirmation?.confirmation_url || null });
+  } catch (err) {
+    return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }
