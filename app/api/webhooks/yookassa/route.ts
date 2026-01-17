@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'; // Это запретит попытки статической сборки этого роута
 
 import { NextResponse } from 'next/server';
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 
