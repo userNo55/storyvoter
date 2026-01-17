@@ -1,18 +1,27 @@
-export const dynamic = 'force-dynamic'; // Это запретит попытки статической сборки этого роута
+export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-import { YooCheckout } from 'yookassa-ts';
-import { supabase } from '../../supabase'; // Ваш клиент supabase с сервисным ключом!
-
-const checkout = new YooCheckout({ 
-  shopId: process.env.YOOKASSA_SHOP_ID!, 
-  secretKey: process.env.YOOKASSA_SECRET_KEY! 
-});
+// Используем require, чтобы избежать проблем с ES-модулями в этой библиотеке
+const { YooCheckout } = require('yookassa-ts');
 
 export async function POST(req: Request) {
-  const { amount, userId } = await req.json();
+  // Проверяем наличие ключей внутри функции
+  const shopId = process.env.YOOKASSA_SHOP_ID;
+  const secretKey = process.env.YOOKASSA_SECRET_KEY;
+
+  if (!shopId || !secretKey) {
+    return NextResponse.json({ error: "Ключи ЮKassa не настроены в Vercel" }, { status: 500 });
+  }
 
   try {
+    // Инициализация внутри POST-запроса
+    const checkout = new YooCheckout({
+      shopId: shopId,
+      secretKey: secretKey,
+    });
+
+    const { amount, userId } = await req.json();
+
     const payment = await checkout.createPayment({
       amount: {
         value: amount.toFixed(2),
@@ -23,16 +32,17 @@ export async function POST(req: Request) {
       },
       confirmation: {
         type: 'redirect',
-        return_url: 'https://vash-sait.ru', // Куда вернуть пользователя после оплаты
+        return_url: 'https://xn----7sbfkf5bif1g.ru', // Укажите ваш реальный домен на Vercel
       },
       description: `Пополнение баланса (Молнии) для пользователя ${userId}`,
       metadata: {
-        userId: userId, // Важно передать ID пользователя здесь
+        userId: userId,
       },
     });
 
     return NextResponse.json({ confirmationUrl: payment.confirmation.confirmation_url });
-  } catch (error) {
-    return NextResponse.json({ error: 'Ошибка создания платежа' }, { status: 500 });
+  } catch (error: any) {
+    console.error('PAY_ERROR:', error);
+    return NextResponse.json({ error: 'Ошибка создания платежа: ' + error.message }, { status: 500 });
   }
 }
