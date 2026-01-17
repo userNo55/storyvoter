@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'; // Это запретит попытки статической сборки этого роута
+
+import { NextResponse } from 'next/server';
 import { NextResponse } from 'next/server';
 import { YooCheckout } from 'yookassa-ts';
 import { supabase } from '../../supabase'; // Ваш клиент supabase с сервисным ключом!
