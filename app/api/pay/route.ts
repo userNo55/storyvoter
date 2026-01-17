@@ -1,48 +1,58 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-// Используем require, чтобы избежать проблем с ES-модулями в этой библиотеке
-const { YooCheckout } = require('yookassa-ts');
 
 export async function POST(req: Request) {
-  // Проверяем наличие ключей внутри функции
   const shopId = process.env.YOOKASSA_SHOP_ID;
   const secretKey = process.env.YOOKASSA_SECRET_KEY;
 
   if (!shopId || !secretKey) {
-    return NextResponse.json({ error: "Ключи ЮKassa не настроены в Vercel" }, { status: 500 });
+    return NextResponse.json({ error: "Ключи не настроены" }, { status: 500 });
   }
 
   try {
-    // Инициализация внутри POST-запроса
-    const checkout = new YooCheckout({
-      shopId: shopId,
-      secretKey: secretKey,
-    });
-
     const { amount, userId } = await req.json();
 
-    const payment = await checkout.createPayment({
-      amount: {
-        value: amount.toFixed(2),
-        currency: 'RUB',
+    // Генерируем уникальный ключ идемпотентности (нужен для ЮKassa)
+    const idempotenceKey = crypto.randomUUID();
+
+    // Прямой запрос к API ЮKassa через стандартный fetch
+    const response = await fetch('https://api.yookassa.ru', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`,
+        'Idempotence-Key': idempotenceKey,
+        'Content-Type': 'application/json',
       },
-      payment_method_data: {
-        type: 'bank_card',
-      },
-      confirmation: {
-        type: 'redirect',
-        return_url: 'https://xn----7sbfkf5bif1g.ru', // Укажите ваш реальный домен на Vercel
-      },
-      description: `Пополнение баланса (Молнии) для пользователя ${userId}`,
-      metadata: {
-        userId: userId,
-      },
+      body: JSON.stringify({
+        amount: {
+          value: amount.toFixed(2),
+          currency: 'RUB',
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: 'https://vash-sait.ru', // ЗАМЕНИТЕ НА ВАШ ДОМЕН
+        },
+        capture: true,
+        description: `Пополнение баланса пользователя ${userId}`,
+        metadata: {
+          userId: userId,
+        },
+      }),
     });
 
-    return NextResponse.json({ confirmationUrl: payment.confirmation.confirmation_url });
+    const payment = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payment.description || 'Ошибка ЮKassa');
+    }
+
+    return NextResponse.json({ 
+      confirmationUrl: payment.confirmation.confirmation_url 
+    });
+
   } catch (error: any) {
     console.error('PAY_ERROR:', error);
-    return NextResponse.json({ error: 'Ошибка создания платежа: ' + error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
