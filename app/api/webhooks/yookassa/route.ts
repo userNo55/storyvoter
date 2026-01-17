@@ -1,6 +1,8 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'; // Это запретит попытки статической сборки этого роута
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+
 
 // Используем SERVICE_ROLE_KEY, так как это действие от имени системы
 const supabaseAdmin = createClient(
