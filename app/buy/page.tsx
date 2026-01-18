@@ -66,7 +66,7 @@ export default function BuyPage() {
       <p className="text-slate-500 mb-8 text-sm leading-relaxed">
         Один платный голос (<span className="text-blue-600 font-bold">1 ⚡</span>) дает вашей опции сразу 
         <span className="font-bold text-slate-900 ml-1 underline">3 очка</span>. 
-        Это лучший способ поддержать автора и повлиять на сюжет!
+        Это лучший способ поддержать платформу и повлиять на сюжет!
       </p>
 
       <div className="grid gap-4">
