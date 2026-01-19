@@ -7,29 +7,49 @@ export default function HomePage() {
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userNickname, setUserNickname] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      // 1. Проверяем пользователя и его псевдоним
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('pseudonym')
-          .eq('id', user.id)
-          .single();
-        setUserNickname(profile?.pseudonym || user.email);
-      }
+  async function loadData() {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUserId(user?.id || null);
 
-      // 2. Грузим истории
-      const { data } = await supabase
-        .from('stories')
-        .select('*, profiles(pseudonym), chapters(id, expires_at, chapter_number)');
-      setStories(data || []);
-      setLoading(false);
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('pseudonym')
+        .eq('id', user.id)
+        .single();
+      setUserNickname(profile?.pseudonym || user.email);
     }
-    loadData();
-  }, []);
+
+    const { data } = await supabase
+      .from('stories')
+      .select(`
+        *, 
+        profiles(pseudonym), 
+        chapters(id, expires_at, chapter_number),
+        favorites(user_id)
+      `)
+      // Фильтр для того, чтобы подтянуть избранное ТОЛЬКО текущего пользователя
+      .filter('favorites.user_id', 'eq', user?.id || '00000000-0000-0000-0000-000000000000');
+    
+    setStories(data || []);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadData(); }, []);
+
+  const toggleFavorite = async (e: React.MouseEvent, storyId: string, isFav: boolean) => {
+    e.preventDefault(); // Важно! Чтобы не переходило на страницу истории
+    if (!userId) return alert("Войдите в систему");
+
+    if (isFav) {
+      await supabase.from('favorites').delete().match({ user_id: userId, story_id: storyId });
+    } else {
+      await supabase.from('favorites').insert({ user_id: userId, story_id: storyId });
+    }
+    loadData(); // Обновляем состояние
+  };
 
   return (
     <main className="max-w-5xl mx-auto p-6 font-sans">
@@ -48,32 +68,36 @@ export default function HomePage() {
               </Link>
             </>
           ) : (
-            <Link href="/auth" className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold">
-              Войти
-            </Link>
+            <Link href="/auth" className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold">Войти</Link>
           )}
         </div>
       </header>
-      {/* ... далее ваш список историй ... */}
 
-
-      {/* Список книг */}
-      {stories.length === 0 ? (
-        <div className="text-center py-20 bg-slate-50 rounded-[40px] border border-slate-100">
-          <p className="text-slate-400 font-medium">Книг пока нет.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {stories.map((story) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {stories.map((story) => {
+          const isFavorite = story.favorites && story.favorites.length > 0;
+          
+          return (
             <Link 
               href={`/story/${story.id}`} 
               key={story.id} 
               className="group relative p-8 bg-white border border-slate-200 rounded-[32px] hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col h-full"
             >
               <div className="flex justify-between items-start mb-6">
-                <span className="text-[10px] font-black uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-full text-slate-500">
-                  {story.age_rating || '16+'}
-                </span>
+                <div className="flex gap-2 items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-full text-slate-500">
+                    {story.age_rating || '16+'}
+                  </span>
+                  {/* КНОПКА ИЗБРАННОГО - АККУРАТНАЯ ИКОНКА */}
+                  <button 
+                    onClick={(e) => toggleFavorite(e, story.id, isFavorite)}
+                    className={`p-2 rounded-full transition-all ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-400'}`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="flex flex-col items-end">
                   <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase">
                     {story.chapters?.length || 0} ГЛАВ
@@ -91,9 +115,8 @@ export default function HomePage() {
 
               <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-400"></div>
                   <span className="text-sm font-bold text-slate-700">
-                    {/* Используем данные из связанного профиля */}
                     {story.profiles?.pseudonym || 'Анонимный автор'}
                   </span>
                 </div>
@@ -104,9 +127,9 @@ export default function HomePage() {
                 </div>
               </div>
             </Link>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </main>
   );
 }
