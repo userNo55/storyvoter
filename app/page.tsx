@@ -98,7 +98,7 @@ export default function HomePage() {
     <main className="max-w-5xl mx-auto p-6 font-sans">
       <header className="flex justify-between items-center mb-12 py-6 border-b border-slate-100">
         <Link href="/">
-          <h1 className="text-4xl font-black tracking-tighter uppercase">StoryVoter</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase">Vilka</h1>
         </Link>
         
         <div className="flex items-center gap-6">

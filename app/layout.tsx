@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StoryTurn",
-  description: "Вот это поворот!",
+  title: "Vilka",
+  description: "Закрути историю!",
 };
 
 export default function RootLayout({
