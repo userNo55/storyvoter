@@ -88,7 +88,6 @@ export default function Dashboard() {
                   <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
                     <span>Глав: <b className="text-slate-900">{story.chapters?.length || 0}</b></span>
                     <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                    <span>ID: {story.id.slice(0,8)}</span>
                   </div>
                 </div>
                 
