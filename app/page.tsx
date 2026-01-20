@@ -26,8 +26,7 @@ export default function HomePage() {
       setUserNickname(profile?.pseudonym || user.email);
     }
 
-    // 2. Грузим истории с проверкой на избранное для текущего юзера
-    // Используем фильтр по user_id внутри джойна favorites, чтобы понять, лайкнул ли текущий юзер эту книгу
+    // 2. Грузим истории
     const { data } = await supabase
       .from('stories')
       .select(`
@@ -46,21 +45,48 @@ export default function HomePage() {
     loadData();
   }, []);
 
-  // Функция добавления/удаления из избранного
+  // Функция добавления/удаления из избранного (ОПТИМИЗИРОВАННАЯ)
   const toggleFavorite = async (e: React.MouseEvent, storyId: string, isFav: boolean) => {
-    e.preventDefault(); // Чтобы не переходить по ссылке карточки
+    e.preventDefault(); 
     e.stopPropagation();
 
     if (!userId) return alert("Войдите, чтобы добавлять в избранное");
 
+    // --- МГНОВЕННОЕ ОБНОВЛЕНИЕ UI ---
+    setStories(prevStories => 
+      prevStories.map(story => {
+        if (story.id === storyId) {
+          return {
+            ...story,
+            favorites: isFav ? [] : [{ user_id: userId }]
+          };
+        }
+        return story;
+      })
+    );
+
+    // --- ФОНОВЫЙ ЗАПРОС К СЕРВЕРУ ---
     if (isFav) {
-      await supabase.from('favorites').delete().match({ user_id: userId, story_id: storyId });
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .match({ user_id: userId, story_id: storyId });
+      
+      if (error) {
+        console.error(error);
+        loadData(); // Откат при ошибке
+      }
     } else {
-      await supabase.from('favorites').insert({ user_id: userId, story_id: storyId });
+      const { error } = await supabase
+        .from('favorites')
+        .insert({ user_id: userId, story_id: storyId });
+      
+      if (error) {
+        console.error(error);
+        loadData(); // Откат при ошибке
+      }
     }
-    
-    // Обновляем данные, чтобы кнопка и фильтр сразу среагировали
-    loadData();
+    // loadData() здесь не вызываем, чтобы избежать лишнего мерцания
   };
 
   // Логика фильтрации списка
@@ -78,20 +104,19 @@ export default function HomePage() {
         <div className="flex items-center gap-6">
           {userNickname ? (
             <>
-              {/* КНОПКА-ФИЛЬТР (Сердце в хедере) */}
+              {/* КНОПКА-ФИЛЬТР В ХЕДЕРЕ */}
               <button 
                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 border ${
                   showFavoritesOnly 
-                  ? 'bg-red-50 text-red-500 border border-red-100' 
-                  : 'bg-transparent text-slate-400 hover:text-slate-600'
+                  ? 'bg-red-50 text-red-500 border-red-100' 
+                  : 'bg-transparent text-slate-400 border-transparent hover:text-slate-600'
                 }`}
-                title={showFavoritesOnly ? "Показать все" : "Только избранное"}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill={showFavoritesOnly ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
-                <span className="text-sm font-bold">{showFavoritesOnly ? "Избранное" : ""}</span>
+                <span className="text-sm font-bold">{showFavoritesOnly ? "Избранное" : "Все"}</span>
               </button>
 
               <Link href="/dashboard" className="text-sm font-bold text-slate-600 hover:text-blue-600">Мои книги</Link>
@@ -136,11 +161,10 @@ export default function HomePage() {
                       {story.age_rating || '16+'}
                     </span>
                     
-                    {/* ТЕХНИЧЕСКАЯ КНОПКА ЛАЙКА НА КАРТОЧКЕ */}
                     <button 
                       onClick={(e) => toggleFavorite(e, story.id, isFavorite)}
                       className={`p-1.5 rounded-full transition-all duration-200 ${
-                        isFavorite ? 'text-red-500 bg-red-50' : 'text-slate-300 hover:text-red-400 bg-slate-50'
+                        isFavorite ? 'text-red-500 bg-red-50 shadow-sm' : 'text-slate-300 hover:text-red-400 bg-slate-50'
                       }`}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
