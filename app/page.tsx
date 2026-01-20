@@ -107,7 +107,7 @@ export default function HomePage() {
               {/* КНОПКА-ФИЛЬТР В ХЕДЕРЕ */}
               <button 
                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 border ${
+                className={`flex items-center gap-2 py-2 rounded-full transition-all duration-300 border ${
                   showFavoritesOnly 
                   ? 'bg-red-50 text-red-500 border-red-100' 
                   : 'bg-transparent text-slate-400 border-transparent hover:text-slate-600'
@@ -116,7 +116,8 @@ export default function HomePage() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill={showFavoritesOnly ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
-                <span className="text-sm font-bold">{showFavoritesOnly ? "" : ""}</span>
+                <span className="text-sm font-bold">{showFavoritesOnly ? 'bg-red-50 text-red-500 border-red-100' 
+    : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-100'}</span>
               </button>
 
               <Link href="/dashboard" className="text-sm font-bold text-slate-600 hover:text-blue-600">Мои книги</Link>
