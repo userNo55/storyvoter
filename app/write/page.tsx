@@ -215,8 +215,7 @@ export default function WritePage() {
               onChange={e => setCheckboxChecked(e.target.checked)}
             />
             <span className="text-sm leading-relaxed text-slate-700">
-              Я принимаю <Link href="/author-terms" className="text-blue-600 font-bold underline">Условия размещения контента</Link>. 
-              Я согласен с тем, что платные голоса («Молнии») читателей являются добровольной поддержкой платформы и не подлежат автоматической выплате автору.
+              Я принимаю <Link href="/author-terms" className="text-blue-600 font-bold underline">Условия размещения контента</Link>
             </span>
           </label>
         </div>
