@@ -68,7 +68,7 @@ export default function BuyPage() {
     <div className="max-w-2xl mx-auto p-6 md:p-10 font-sans">
       
       {/* КНОПКА НАЗАД */}
-      <header className="flex justify-between items-center mb-10 py-6 border-b border-slate-100">
+      <header className="flex justify-between items-center mb-10 py-6 border-b border-slate-80">
         <Link 
           href="/" 
           className="text-sm font-bold text-blue-600 hover:text-blue-800 transition flex items-center gap-2"
