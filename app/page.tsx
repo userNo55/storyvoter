@@ -204,7 +204,7 @@ export default function HomePage() {
                   </p>
 
                   <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                    <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                       <span className="text-sm font-bold text-slate-700">
                         {story.profiles?.pseudonym || 'Анонимный автор'}
