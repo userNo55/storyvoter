@@ -202,7 +202,7 @@ export default function HomePage() {
                   {story.description || 'Описание отсутствует...'}
                 </p>
 
-                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                 <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                     Автор: {story.profiles?.pseudonym || 'Аноним'}
                   </span>
