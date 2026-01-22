@@ -9,12 +9,12 @@
 /* Переменные для системного переключения тем */
 :root {
   --background: #ffffff; /* Чистый белый для светлой темы */
-  --foreground: #0f172a; /* Темно-синий (slate-900) вместо черного */
+  --foreground: #20242f; /* Темно-синий (slate-900) вместо черного */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #020617; /* Глубокий темно-синий (slate-950) */
+    --background: #1e2027; /* Глубокий темно-синий (slate-950) */
     --foreground: #f1f5f9; /* Светло-серый (slate-100) */
   }
 }
