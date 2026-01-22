@@ -9,11 +9,12 @@ export default function HomePage() {
   const [userNickname, setUserNickname] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   
-  // Состояние фильтра: false — все, true — только избранное
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  // Состояние сортировки: 'new' или 'engagement'
+  const [sortOrder, setSortOrder] = useState<'new' | 'engagement'>('new');
 
   async function loadData() {
-    // 1. Проверяем пользователя
+    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     setUserId(user?.id || null);
 
@@ -26,8 +27,8 @@ export default function HomePage() {
       setUserNickname(profile?.pseudonym || user.email);
     }
 
-    // 2. Грузим истории
-    const { data } = await supabase
+    // Грузим истории с учетом сортировки
+    let query = supabase
       .from('stories')
       .select(`
         *, 
@@ -37,22 +38,27 @@ export default function HomePage() {
       `)
       .filter('favorites.user_id', 'eq', user?.id || '00000000-0000-0000-0000-000000000000');
 
+    if (sortOrder === 'new') {
+      query = query.order('created_at', { ascending: false });
+    } else {
+      query = query.order('engagement', { ascending: false });
+    }
+
+    const { data } = await query;
     setStories(data || []);
     setLoading(false);
   }
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [sortOrder]); // Перезагружаем при смене сортировки
 
-  // Функция добавления/удаления из избранного (ОПТИМИЗИРОВАННАЯ)
   const toggleFavorite = async (e: React.MouseEvent, storyId: string, isFav: boolean) => {
     e.preventDefault(); 
     e.stopPropagation();
 
     if (!userId) return alert("Войдите, чтобы добавлять в избранное");
 
-    // --- МГНОВЕННОЕ ОБНОВЛЕНИЕ UI ---
     setStories(prevStories => 
       prevStories.map(story => {
         if (story.id === storyId) {
@@ -65,31 +71,20 @@ export default function HomePage() {
       })
     );
 
-    // --- ФОНОВЫЙ ЗАПРОС К СЕРВЕРУ ---
     if (isFav) {
       const { error } = await supabase
         .from('favorites')
         .delete()
         .match({ user_id: userId, story_id: storyId });
-      
-      if (error) {
-        console.error(error);
-        loadData(); // Откат при ошибке
-      }
+      if (error) { console.error(error); loadData(); }
     } else {
       const { error } = await supabase
         .from('favorites')
         .insert({ user_id: userId, story_id: storyId });
-      
-      if (error) {
-        console.error(error);
-        loadData(); // Откат при ошибке
-      }
+      if (error) { console.error(error); loadData(); }
     }
-    // loadData() здесь не вызываем, чтобы избежать лишнего мерцания
   };
 
-  // Логика фильтрации списка
   const displayedStories = showFavoritesOnly 
     ? stories.filter(s => s.favorites && s.favorites.length > 0)
     : stories;
@@ -98,57 +93,65 @@ export default function HomePage() {
     <main className="max-w-5xl mx-auto p-6 font-sans">
       <header className="flex justify-between items-center mb-12 py-6 border-b border-slate-100">
         <Link href="/">
-          <h1 className="text-4xl font-black tracking-tighter uppercase">Vilka</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase text-slate-900">Vilka</h1>
         </Link>
         
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6">
           {userNickname ? (
             <>
-              {/* КНОПКА-ФИЛЬТР В ХЕДЕРЕ */}
-              <button 
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`p-2 rounded-full transition-all duration-300 border ${
-                  showFavoritesOnly 
-                    ? 'bg-red-50 text-red-500 border-red-100' 
-                    : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-50'
-                }`}
-                title={showFavoritesOnly ? "Убрать фильтр" : "Показать избранное"}
-              >
-                <svg 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill={showFavoritesOnly ? "currentColor" : "none"} 
-                  stroke="currentColor" 
-                  strokeWidth="2.5"
-                  className="transition-colors duration-300"
+              <div className="flex items-center bg-slate-50 p-1 rounded-full border border-slate-100">
+                {/* КНОПКА СОРТИРОВКИ ПО ВОВЛЕЧЕННОСТИ (МОЛНИЯ) */}
+                <button 
+                  onClick={() => setSortOrder(sortOrder === 'new' ? 'engagement' : 'new')}
+                  className={`p-2 rounded-full transition-all duration-300 ${
+                    sortOrder === 'engagement' 
+                      ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' 
+                      : 'bg-transparent text-slate-400 hover:text-orange-500'
+                  }`}
+                  title={sortOrder === 'engagement' ? "Сортировка: Популярные" : "Сортировать по вовлеченности"}
                 >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </button>
-              <Link href="/dashboard" className="text-sm font-bold text-slate-600 hover:text-blue-600">Мои книги</Link>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                </button>
+
+                {/* КНОПКА-ФИЛЬТР ИЗБРАННОГО */}
+                <button 
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                  className={`p-2 rounded-full transition-all duration-300 ${
+                    showFavoritesOnly 
+                      ? 'text-red-500' 
+                      : 'bg-transparent text-slate-400 hover:text-red-500'
+                  }`}
+                  title={showFavoritesOnly ? "Убрать фильтр" : "Показать избранное"}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={showFavoritesOnly ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
+              </div>
+
+              <Link href="/dashboard" className="hidden md:block text-sm font-bold text-slate-600 hover:text-blue-600">Мои книги</Link>
               <Link href="/profile" className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full hover:bg-slate-200 transition">
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
                 <span className="text-sm font-bold text-slate-800">{userNickname}</span>
               </Link>
             </>
           ) : (
-            <Link href="/auth" className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold">
-              Войти
-            </Link>
+            <Link href="/auth" className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold">Войти</Link>
           )}
         </div>
       </header>
 
       {loading ? (
-        <div className="text-center py-20 text-slate-400">Загрузка историй...</div>
+        <div className="text-center py-20 text-slate-400 font-bold animate-pulse">Загрузка...</div>
       ) : displayedStories.length === 0 ? (
         <div className="text-center py-20 bg-slate-50 rounded-[40px] border border-slate-100">
           <p className="text-slate-400 font-medium">
-            {showFavoritesOnly ? "У вас пока нет избранных книг." : "Книг пока нет."}
+            {showFavoritesOnly ? "В избранном пока пусто." : "Книг пока нет."}
           </p>
           {showFavoritesOnly && (
-            <button onClick={() => setShowFavoritesOnly(false)} className="mt-4 text-blue-600 font-bold text-sm underline">Показать все книги</button>
+            <button onClick={() => setShowFavoritesOnly(false)} className="mt-4 text-blue-600 font-bold text-sm underline">Показать всё</button>
           )}
         </div>
       ) : (
@@ -171,7 +174,7 @@ export default function HomePage() {
                     <button 
                       onClick={(e) => toggleFavorite(e, story.id, isFavorite)}
                       className={`p-1.5 rounded-full transition-all duration-200 ${
-                        isFavorite ? 'text-red-500 bg-red-50 shadow-sm' : 'text-slate-300 hover:text-red-400 bg-slate-50'
+                        isFavorite ? 'text-red-500 bg-red-50' : 'text-slate-300 hover:text-red-400 bg-slate-50'
                       }`}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
@@ -180,14 +183,18 @@ export default function HomePage() {
                     </button>
                   </div>
 
-                  <div className="flex flex-col items-end">
+                  <div className="flex gap-2">
+                    {/* ИКОНКА ВОВЛЕЧЕННОСТИ В КАРТОЧКЕ */}
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-50 px-3 py-1 rounded-full uppercase">
+                      ⚡ {story.engagement || 0}
+                    </span>
                     <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase">
                       {story.chapters?.length || 0} ГЛАВ
                     </span>
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-bold mb-3 group-hover:text-blue-600 transition-colors leading-tight">
+                <h2 className="text-2xl font-bold mb-3 group-hover:text-blue-600 transition-colors leading-tight text-slate-900">
                   {story.title}
                 </h2>
                 
@@ -196,16 +203,11 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                    <span className="text-sm font-bold text-slate-700">
-                      {story.profiles?.pseudonym || 'Анонимный автор'}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                    Автор: {story.profiles?.pseudonym || 'Аноним'}
+                  </span>
+                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    →
                   </div>
                 </div>
               </Link>
