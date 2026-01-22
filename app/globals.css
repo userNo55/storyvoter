@@ -1,26 +1,39 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Настройки темы для Tailwind v4 */
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Переменные для системного переключения тем */
+:root {
+  --background: #ffffff; /* Чистый белый для светлой темы */
+  --foreground: #0f172a; /* Темно-синий (slate-900) вместо черного */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617; /* Глубокий темно-синий (slate-950) */
+    --foreground: #f1f5f9; /* Светло-серый (slate-100) */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Базовые стили для всей платформы */
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply transition-colors duration-300;
+  }
+
+  /* Чтобы заголовки в темной теме всегда были яркими */
+  h1, h2, h3, h4 {
+    @apply text-slate-900 dark:text-white;
+  }
+}
+
+/* Улучшаем плавность для всех интерактивных элементов */
+* {
+  @apply border-slate-200 dark:border-slate-800;
 }
