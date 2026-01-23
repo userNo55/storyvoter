@@ -186,7 +186,7 @@ export default function HomePage() {
                         ⚡ {story.engagement || 0}
                       </span>
                       <span className="text-[10px] font-bold text-blue-500 bg-white dark:bg-blue-950/30 px-3 py-1 rounded-full uppercase">
-                        {story.chapters?.length || 0} ГЛАВ
+                        ГЛАВ : {story.chapters?.length || 0}
                       </span>
                     </div>
                   </div>
