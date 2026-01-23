@@ -14,37 +14,62 @@ export default function HomePage() {
 
   async function loadData() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    setUserId(user?.id || null);
+    
+    try {
+      // Параллельный запуск запросов
+      const [
+        { data: { user } },
+        storiesQuery
+      ] = await Promise.all([
+        supabase.auth.getUser(),
+        (async () => {
+          let query = supabase
+            .from('stories')
+            .select(`
+              *, 
+              profiles(pseudonym), 
+              chapters(id, expires_at, chapter_number),
+              favorites(user_id)
+            `);
 
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('pseudonym')
-        .eq('id', user.id)
-        .single();
-      setUserNickname(profile?.pseudonym || user.email);
+          if (sortOrder === 'new') {
+            query = query.order('created_at', { ascending: false });
+          } else {
+            query = query.order('engagement', { ascending: false });
+          }
+
+          const { data } = await query;
+          return { data };
+        })()
+      ]);
+
+      setUserId(user?.id || null);
+
+      if (user) {
+        // Параллельный запрос профиля
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('pseudonym')
+          .eq('id', user.id)
+          .single();
+        setUserNickname(profile?.pseudonym || user.email);
+      }
+
+      // Фильтрация избранного после получения данных
+      const filteredData = storiesQuery.data || [];
+      const finalStories = user ? 
+        filteredData.filter(story => 
+          story.favorites?.some((fav: any) => fav.user_id === user.id)
+        ) : 
+        filteredData;
+
+      setStories(finalStories);
+    } catch (error) {
+      console.error('Ошибка загрузки:', error);
+      setStories([]);
+    } finally {
+      setLoading(false);
     }
-
-    let query = supabase
-      .from('stories')
-      .select(`
-        *, 
-        profiles(pseudonym), 
-        chapters(id, expires_at, chapter_number),
-        favorites(user_id)
-      `)
-      .filter('favorites.user_id', 'eq', user?.id || '00000000-0000-0000-0000-000000000000');
-
-    if (sortOrder === 'new') {
-      query = query.order('created_at', { ascending: false });
-    } else {
-      query = query.order('engagement', { ascending: false });
-    }
-
-    const { data } = await query;
-    setStories(data || []);
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -142,7 +167,26 @@ export default function HomePage() {
         </header>
 
         {loading ? (
-          <div className="text-center py-20 text-slate-400 dark:text-gray-600 font-bold animate-pulse">Загрузка...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="p-8 bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-gray-800 rounded-[32px] animate-pulse">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="h-6 w-16 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="h-6 w-20 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+                </div>
+                <div className="h-8 bg-slate-200 dark:bg-gray-700 rounded mb-3"></div>
+                <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded mb-8"></div>
+                <div className="flex justify-between items-center pt-6 border-t border-slate-50 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-gray-700 rounded"></div>
+                  </div>
+                  <div className="w-10 h-10 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : displayedStories.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 dark:bg-[#1A1A1A] rounded-[40px] border border-slate-100 dark:border-gray-800">
             <p className="text-slate-400 dark:text-gray-500 font-medium">

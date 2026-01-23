@@ -36,6 +36,21 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
   );
 }
 
+// --- СКЕЛЕТОН КАРТОЧКИ ГЛАВЫ ---
+function ChapterSkeleton() {
+  return (
+    <div className="border rounded-[24px] overflow-hidden border-slate-200 dark:border-gray-800 animate-pulse">
+      <div className="flex justify-between items-center bg-white dark:bg-[#1A1A1A] p-6">
+        <div className="flex-1">
+          <div className="h-6 w-1/2 bg-slate-200 dark:bg-gray-700 rounded mb-2"></div>
+          <div className="h-4 w-1/4 bg-slate-200 dark:bg-gray-700 rounded"></div>
+        </div>
+        <div className="w-8 h-8 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+      </div>
+    </div>
+  );
+}
+
 export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
@@ -53,23 +68,42 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     async function loadData() {
       if (!id) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      
+      try {
+        // Получаем пользователя
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
 
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('coins').eq('id', user.id).single();
-        setUserCoins(profile?.coins || 0);
-        const { data: v } = await supabase.from('votes').select('chapter_id').eq('user_id', user.id);
-        setVotedChapters(v?.map(item => item.chapter_id) || []);
+        // Параллельные запросы для данных пользователя и истории
+        const [
+          profilePromise,
+          votesPromise,
+          storyPromise,
+          chaptersPromise
+        ] = await Promise.all([
+          user ? supabase.from('profiles').select('coins').eq('id', user.id).single() : Promise.resolve({ data: null }),
+          user ? supabase.from('votes').select('chapter_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
+          supabase.from('stories').select('*, profiles(*)').eq('id', id).single(),
+          supabase.from('chapters').select('*, options(*)').eq('story_id', id).order('chapter_number', { ascending: true })
+        ]);
+
+        // Обработка результатов
+        const profileData = profilePromise.data;
+        const votesData = votesPromise.data;
+        const storyData = storyPromise.data;
+        const chaptersData = chaptersPromise.data;
+
+        setUserCoins(profileData?.coins || 0);
+        setVotedChapters(votesData?.map((item: any) => item.chapter_id) || []);
+        setStory(storyData);
+        setChapters(chaptersData || []);
+      } catch (error) {
+        console.error('Ошибка загрузки:', error);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: s } = await supabase.from('stories').select('*, profiles(*)').eq('id', id).single();
-      setStory(s);
-
-      const { data: c } = await supabase.from('chapters').select('*, options(*)').eq('story_id', id).order('chapter_number', { ascending: true });
-      setChapters(c || []);
-      setLoading(false);
     }
+    
     loadData();
   }, [id]);
 
@@ -145,7 +179,43 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
-  if (loading) return <div className="p-10 text-center font-sans dark:text-white">Загрузка...</div>;
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 font-sans bg-white dark:bg-[#0A0A0A] min-h-screen text-slate-900 dark:text-white transition-colors duration-300">
+        {/* Скелетон хедера */}
+        <header className="flex justify-between items-center mb-8 border-b pb-4 border-slate-100 dark:border-gray-800">
+          <div className="h-6 w-32 bg-slate-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-8 w-40 bg-slate-200 dark:bg-gray-700 rounded-full"></div>
+        </header>
+
+        {/* Скелетон заголовка */}
+        <div className="h-12 bg-slate-200 dark:bg-gray-700 rounded mb-10 w-3/4"></div>
+
+        {/* Скелетон блока автора */}
+        <div className="flex items-center gap-4 mb-8 p-4 bg-slate-50 dark:bg-[#1A1A1A] rounded-[24px] border border-slate-100 dark:border-gray-800">
+          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-gray-700"></div>
+          <div className="flex-1">
+            <div className="h-3 w-32 bg-slate-200 dark:bg-gray-700 rounded mb-2"></div>
+            <div className="h-5 w-48 bg-slate-200 dark:bg-gray-700 rounded"></div>
+          </div>
+        </div>
+
+        {/* Скелетон описания */}
+        <div className="space-y-2 mb-10">
+          <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-5/6"></div>
+          <div className="h-4 bg-slate-200 dark:bg-gray-700 rounded w-4/6"></div>
+        </div>
+
+        {/* Скелетоны глав */}
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
+            <ChapterSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const latestChapterNumber = chapters.length > 0 ? Math.max(...chapters.map(c => c.chapter_number)) : 0;
 
