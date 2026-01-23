@@ -189,6 +189,7 @@ export default function HomePage() {
                         ГЛАВ: {story.chapters?.length || 0} 
                       </span>
                     </div>
+                  </div>
 
                   <h2 className="text-2xl font-bold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight text-slate-900 dark:text-white">
                     {story.title}
