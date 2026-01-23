@@ -102,7 +102,14 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
 
   // Удаление главы (доступно только автору и только до окончания голосования)
   const handleDeleteChapter = async (chapterId: string, expiresAt: string) => {
-    const isExpired = new Date(expiresAt).getTime() < new Date().getTime();
+    // ДЕБАГ: Выводим значения для проверки
+    console.log('Deleting chapter with expires_at:', expiresAt);
+    const expireTime = new Date(expiresAt).getTime();
+    const now = new Date().getTime();
+    console.log('expireTime:', expireTime, 'now:', now, 'difference:', expireTime - now);
+    
+    const isExpired = expireTime < now;
+    console.log('isExpired:', isExpired);
     
     if (isExpired) {
       alert("Нельзя удалить главу после окончания голосования");
@@ -116,12 +123,11 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     setDeleting(chapterId);
 
     try {
-      // Используем транзакцию для согласованного удаления
-      const { error } = await supabase.rpc('delete_chapter_with_related', {
-        chapter_id_param: chapterId
-      });
-
-      if (error) throw error;
+      // Удаляем связанные данные последовательно
+      await supabase.from('donations').delete().eq('chapter_id', chapterId);
+      await supabase.from('votes').delete().eq('chapter_id', chapterId);
+      await supabase.from('options').delete().eq('chapter_id', chapterId);
+      await supabase.from('chapters').delete().eq('id', chapterId);
 
       // Обновляем локальное состояние
       setChapters(chapters.filter(c => c.id !== chapterId));
@@ -180,11 +186,23 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
 
       <div className="space-y-6">
         {chapters.map((chapter) => {
-          const isExpired = new Date(chapter.expires_at).getTime() < new Date().getTime();
+          // ДЕБАГ: Добавим вывод в консоль для каждой главы
+          const expireTime = new Date(chapter.expires_at).getTime();
+          const now = new Date().getTime();
+          const isExpired = expireTime < now;
+          
+          console.log(`Chapter ${chapter.chapter_number}:`, {
+            expires_at: chapter.expires_at,
+            expireTime,
+            now,
+            isExpired,
+            timeLeft: expireTime - now
+          });
+          
           const hasVoted = votedChapters.includes(chapter.id);
           const isLatest = chapter.chapter_number === latestChapterNumber;
           const totalVotes = chapter.options?.reduce((sum: number, o: any) => sum + o.votes, 0) || 0;
-          const canDelete = isAuthor && !isExpired; // ИСПРАВЛЕНО: !isExpired вместо isExpired
+          const canDelete = isAuthor && !isExpired; // Кнопка должна показываться только когда НЕ истекло
 
           return (
             <div key={chapter.id} className={`border rounded-[24px] overflow-hidden ${
