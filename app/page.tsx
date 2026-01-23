@@ -185,11 +185,10 @@ export default function HomePage() {
                       <span className="flex items-center gap-1 text-[10px] font-bold text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-3 py-1 rounded-full uppercase">
                         ⚡ {story.engagement || 0}
                       </span>
-                      <span className="text-[10px] font-bold text-blue-500 bg-white dark:bg-blue-950/30 px-3 py-1 rounded-full uppercase">
-                        {story.chapters?.length || 0} ГЛАВ
+                      <span className="text-[10px] font-bold text-blue-500 bg-slate-100 dark:bg-blue-950/30 px-3 py-1 rounded-full uppercase">
+                        ГЛАВ: {story.chapters?.length || 0} 
                       </span>
                     </div>
-                  </div>
 
                   <h2 className="text-2xl font-bold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight text-slate-900 dark:text-white">
                     {story.title}
