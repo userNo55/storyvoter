@@ -100,16 +100,9 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     else window.location.reload();
   };
 
-  // Удаление главы (доступно только автору и только до окончания голосования)
+  // Удаление главы (доступно только автору и только для последней главы до окончания голосования)
   const handleDeleteChapter = async (chapterId: string, expiresAt: string) => {
-    // ДЕБАГ: Выводим значения для проверки
-    console.log('Deleting chapter with expires_at:', expiresAt);
-    const expireTime = new Date(expiresAt).getTime();
-    const now = new Date().getTime();
-    console.log('expireTime:', expireTime, 'now:', now, 'difference:', expireTime - now);
-    
-    const isExpired = expireTime < now;
-    console.log('isExpired:', isExpired);
+    const isExpired = new Date(expiresAt).getTime() < new Date().getTime();
     
     if (isExpired) {
       alert("Нельзя удалить главу после окончания голосования");
@@ -123,14 +116,19 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     setDeleting(chapterId);
 
     try {
-      // Удаляем связанные данные последовательно
-      await supabase.from('donations').delete().eq('chapter_id', chapterId);
-      await supabase.from('votes').delete().eq('chapter_id', chapterId);
-      await supabase.from('options').delete().eq('chapter_id', chapterId);
-      await supabase.from('chapters').delete().eq('id', chapterId);
+      // Удаляем только главу - связанные данные удалятся каскадно
+      const { error } = await supabase
+        .from('chapters')
+        .delete()
+        .eq('id', chapterId);
+      
+      if (error) {
+        console.error("Ошибка при удалении главы:", error);
+        throw error;
+      }
 
       // Обновляем локальное состояние
-      setChapters(chapters.filter(c => c.id !== chapterId));
+      setChapters(prevChapters => prevChapters.filter(c => c.id !== chapterId));
       
       // Если удаляли открытую главу, закрываем её
       if (openChapter === chapterId) {
@@ -186,23 +184,13 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
 
       <div className="space-y-6">
         {chapters.map((chapter) => {
-          // ДЕБАГ: Добавим вывод в консоль для каждой главы
-          const expireTime = new Date(chapter.expires_at).getTime();
-          const now = new Date().getTime();
-          const isExpired = expireTime < now;
-          
-          console.log(`Chapter ${chapter.chapter_number}:`, {
-            expires_at: chapter.expires_at,
-            expireTime,
-            now,
-            isExpired,
-            timeLeft: expireTime - now
-          });
-          
+          const isExpired = new Date(chapter.expires_at).getTime() < new Date().getTime();
           const hasVoted = votedChapters.includes(chapter.id);
           const isLatest = chapter.chapter_number === latestChapterNumber;
           const totalVotes = chapter.options?.reduce((sum: number, o: any) => sum + o.votes, 0) || 0;
-          const canDelete = isAuthor && isLatest && !isExpired; // Кнопка должна показываться только когда НЕ истекло
+          
+          // Удаление доступно ТОЛЬКО для ПОСЛЕДНЕЙ главы И ТОЛЬКО до окончания голосования
+          const canDelete = isAuthor && isLatest && !isExpired;
 
           return (
             <div key={chapter.id} className={`border rounded-[24px] overflow-hidden ${
@@ -217,13 +205,13 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                   <span className="text-slate-400 dark:text-gray-400 text-lg">{openChapter === chapter.id ? '−' : '+'}</span>
                 </button>
                 
-                {/* Кнопка удаления для автора */}
+                {/* Кнопка удаления для автора - ТОЛЬКО для последней главы и ТОЛЬКО до окончания голосования */}
                 {canDelete && (
                   <button
                     onClick={() => handleDeleteChapter(chapter.id, chapter.expires_at)}
                     disabled={deleting === chapter.id}
                     className="mr-4 p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors disabled:opacity-50"
-                    title="Удалить главу (доступно до окончания голосования)"
+                    title="Удалить главу (доступно только для последней главы до окончания голосования)"
                   >
                     {deleting === chapter.id ? (
                       <div className="w-4 h-4 border-2 border-red-500 dark:border-red-400 border-t-transparent rounded-full animate-spin"></div>
@@ -246,11 +234,13 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                       {chapter.question_text}
                     </h3>
                     
+                    {/* Таймер показывается ТОЛЬКО для последней главы И ТОЛЬКО если голосование не завершено */}
                     {isLatest && !isExpired && <Countdown expiresAt={chapter.expires_at} />}
 
                     <div className="space-y-3">
                       {chapter.options?.map((opt: any) => {
                         const percentage = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                        // Голосовать можно ТОЛЬКО в последней главе И ТОЛЬКО если голосование не завершено
                         const canVote = isLatest && !isExpired && !hasVoted && user;
 
                         return (
@@ -269,7 +259,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                               </div>
                             </button>
 
-                            {/* КНОПКА ПОДДЕРЖАТЬ (появляется после голосования) */}
+                            {/* КНОПКА ПОДДЕРЖАТЬ (появляется после голосования) - ТОЛЬКО для последней главы */}
                             {hasVoted && isLatest && !isExpired && (
                               <button 
                                 onClick={() => handlePaidVote(chapter.id, opt.id)}
@@ -283,7 +273,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                       })}
                     </div>
 
-                    {!user && isLatest && (
+                    {!user && isLatest && !isExpired && (
                       <p className="text-center text-xs text-slate-500 dark:text-gray-400 mt-6 uppercase font-bold tracking-widest">
                         <Link href="/auth" className="text-blue-600 dark:text-blue-400 hover:underline">Войдите</Link>, чтобы участвовать
                       </p>
