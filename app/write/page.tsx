@@ -144,7 +144,7 @@ export default function WritePage() {
       </header>
 
       <section className="space-y-6 mb-12">
-        <h2 className="text-xl font-bold border-b pb-2 text-slate-400 dark:text-gray-500">1. О книге</h2>
+        <h2 className="text-xl font-bold border-b pb-2 text-slate-400 dark:text-gray-500">О книге</h2>
         <input 
           type="text" 
           placeholder="Название книги" 
@@ -172,7 +172,7 @@ export default function WritePage() {
       </section>
 
       <section className="space-y-6 mb-8 bg-slate-50 dark:bg-[#1A1A1A] p-6 md:p-8 rounded-[32px] border border-slate-100 dark:border-gray-800">
-        <h2 className="text-xl font-bold border-b pb-2 text-slate-400 dark:text-gray-500">2. Первая глава</h2>
+        <h2 className="text-xl font-bold border-b pb-2 text-slate-400 dark:text-gray-500">Первая глава</h2>
         <input 
           type="text" 
           value={chapterTitle}
