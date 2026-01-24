@@ -85,7 +85,7 @@ export default function BuyPage() {
           
           {/* ССЫЛКА НА ВК */}
           <a 
-            href="https://vk.com/ваша_группа" 
+            href="https://vk.com/vilkaTwist" 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-[#0077FF] hover:bg-[#0066DD] text-white font-bold py-3 px-6 rounded-2xl transition-colors shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 w-full"
@@ -131,15 +131,15 @@ export default function BuyPage() {
             <ul className="text-sm text-slate-600 dark:text-gray-300 space-y-1">
               <li className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                <span>Хостинг платформы</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                <span>Дополнительный функционал голосования</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                 <span>Монетизация для авторов</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                <span>Мобильное приложение</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                <span>Расширенные аналитики</span>
               </li>
             </ul>
           </div>
