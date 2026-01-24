@@ -148,18 +148,18 @@ export default function WritePage() {
         <input 
           type="text" 
           placeholder="Название книги" 
-          className="w-full text-3xl font-bold border-none outline-none placeholder:text-slate-200 dark:placeholder:text-gray-600 bg-transparent text-slate-900 dark:text-white"
+          className="w-full text-3xl font-bold border-none outline-none placeholder:text-slate-300 dark:placeholder:text-gray-600 bg-transparent text-slate-900 dark:text-white"
           onChange={e => setTitle(e.target.value)}
         />
         <textarea 
           placeholder="Краткое описание (аннотация)..." 
-          className="w-full border border-slate-200 dark:border-gray-800 p-4 rounded-2xl h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-white dark:bg-gray-900 text-slate-900 dark:text-white"
+          className="w-full border border-slate-200 dark:border-gray-800 p-4 rounded-2xl h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-white dark:bg-gray-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500"
           onChange={e => setDescription(e.target.value)}
         />
         <div className="flex items-center gap-4">
           <span className="text-sm font-bold text-slate-500 dark:text-gray-500 uppercase">Рейтинг:</span>
           <select 
-            className="p-2 border border-slate-200 dark:border-gray-800 rounded-xl font-bold bg-white dark:bg-gray-900 text-slate-900 dark:text-white"
+            className="p-2 border border-slate-200 dark:border-gray-800 rounded-xl font-bold bg-white dark:bg-gray-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={ageRating}
             onChange={e => setAgeRating(e.target.value)}
           >
@@ -176,32 +176,33 @@ export default function WritePage() {
         <input 
           type="text" 
           value={chapterTitle}
-          className="w-full bg-transparent border-b p-2 font-bold outline-none border-slate-200 dark:border-gray-700 focus:border-blue-500 text-slate-900 dark:text-white"
+          className="w-full bg-transparent border-b p-2 font-bold outline-none border-slate-200 dark:border-gray-700 focus:border-blue-500 text-slate-900 dark:text-white placeholder:text-slate-300"
           onChange={e => setChapterTitle(e.target.value)}
         />
         <textarea 
           placeholder="Текст вашей главы..." 
-          className="w-full border border-slate-200 dark:border-gray-800 p-4 rounded-2xl h-64 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-slate-900 dark:text-white"
+          className="w-full border border-slate-200 dark:border-gray-800 p-4 rounded-2xl h-64 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500"
           onChange={e => setContent(e.target.value)}
         />
         
-        <div className="bg-slate-900 dark:bg-gray-900 p-6 rounded-2xl text-white dark:text-white border border-slate-800 dark:border-gray-700">
-          <label className="block text-xs uppercase font-bold text-slate-400 dark:text-gray-400 mb-2">Вопрос читателям</label>
+        {/* ИСПРАВЛЕННЫЙ БЛОК ВОПРОСА - БОЛЕЕ МЯГКИЙ ДЛЯ СВЕТЛОЙ ТЕМЫ */}
+        <div className="bg-blue-50 dark:bg-gray-900 p-6 rounded-2xl text-slate-800 dark:text-white border border-blue-100 dark:border-gray-700">
+          <label className="block text-xs uppercase font-bold text-blue-600 dark:text-gray-400 mb-2">Вопрос читателям</label>
           <input 
             type="text" 
             placeholder="Например: Как поступит герой?" 
-            className="w-full bg-white/10 dark:bg-gray-800/50 p-3 rounded-xl mb-6 outline-none border border-white/10 dark:border-gray-700 focus:border-blue-500 text-white dark:text-white"
+            className="w-full bg-white dark:bg-gray-800 p-3 rounded-xl mb-6 outline-none border border-blue-200 dark:border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500"
             onChange={e => setQuestion(e.target.value)}
           />
           
-          <label className="block text-xs uppercase font-bold text-slate-400 dark:text-gray-400 mb-2">Варианты ответов</label>
+          <label className="block text-xs uppercase font-bold text-blue-600 dark:text-gray-400 mb-2">Варианты ответов</label>
           <div className="space-y-3">
             {options.map((opt, i) => (
               <input 
                 key={i} 
                 type="text" 
                 placeholder={`Вариант ${i+1}`}
-                className="w-full bg-white/10 dark:bg-gray-800/50 p-3 rounded-xl outline-none border border-white/10 dark:border-gray-700 focus:border-blue-500 transition-colors text-white dark:text-white"
+                className="w-full bg-white dark:bg-gray-800 p-3 rounded-xl outline-none border border-blue-200 dark:border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 transition-colors"
                 value={opt}
                 onChange={e => {
                   const newOpts = [...options];
@@ -212,12 +213,12 @@ export default function WritePage() {
             ))}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-white/10 dark:border-gray-700">
-            <label className="block text-xs uppercase font-bold text-slate-400 dark:text-gray-400 mb-2 text-center md:text-left">Длительность голосования (часы)</label>
+          <div className="mt-6 pt-6 border-t border-blue-100 dark:border-gray-700">
+            <label className="block text-xs uppercase font-bold text-blue-600 dark:text-gray-400 mb-2 text-center md:text-left">Длительность голосования (часы)</label>
             <input 
               type="number" 
               value={timerHours}
-              className="bg-white/10 dark:bg-gray-800/50 p-2 rounded-lg w-full md:w-24 outline-none text-center font-bold text-white dark:text-white"
+              className="bg-white dark:bg-gray-800 p-2 rounded-lg w-full md:w-24 outline-none text-center font-bold text-slate-900 dark:text-white border border-blue-200 dark:border-gray-700 focus:border-blue-500"
               onChange={e => setTimerHours(Number(e.target.value))}
             />
           </div>
@@ -230,7 +231,7 @@ export default function WritePage() {
           <label className="flex items-start gap-4 cursor-pointer">
             <input 
               type="checkbox" 
-              className="mt-1 w-6 h-6 rounded border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-900"
+              className="mt-1 w-6 h-6 rounded border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-900"
               checked={checkboxChecked}
               onChange={e => setCheckboxChecked(e.target.checked)}
             />
