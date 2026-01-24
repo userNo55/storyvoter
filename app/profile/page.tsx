@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Добавлен роутер
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
   const [pseudonym, setPseudonym] = useState('');
@@ -10,7 +10,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const router = useRouter(); // Инициализация роутера
+  const router = useRouter();
 
   useEffect(() => {
     async function getProfile() {
@@ -42,14 +42,13 @@ export default function ProfilePage() {
     else alert("Профиль успешно обновлен!");
   };
 
-  // ФУНКЦИЯ ВЫХОДА ИЗ АККАУНТА
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       alert('Ошибка при выходе: ' + error.message);
     } else {
-      router.push('/'); // Перенаправление на главную
-      router.refresh(); // Обновление данных на странице
+      router.push('/');
+      router.refresh();
     }
   };
 
@@ -57,17 +56,29 @@ export default function ProfilePage() {
   if (!user) return <div className="p-10 text-center font-sans">Нужно войти в систему</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 font-sans text-slate-900">
-      {/* ЗАГОЛОВОК С КНОПКОЙ НАЗАД И ИКОНКОЙ ВЫХОДА */}
-      <header className="flex justify-between items-center mb-10 py-4 border-b border-slate-100 dark:border-gray-800">
-        <Link href="/" className="text-sm font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
-          <span>←</span> На главную
+    <div className="max-w-2xl mx-auto p-6 font-sans text-slate-900 dark:text-white">
+      {/* ИСПРАВЛЕННЫЙ ХЕДЕР */}
+      <header className="flex items-center gap-4 mb-10 py-4 border-b border-slate-100 dark:border-gray-800">
+        {/* Кнопка назад слева */}
+        <Link 
+          href="/" 
+          className="flex-shrink-0 text-sm font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+        >
+          <span>←</span>
         </Link>
-        <h1 className="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white">Настройки</h1>
-        {/* КНОПКА ВЫХОДА */}
+        
+        {/* Пустое пространство, которое растягивается */}
+        <div className="flex-grow"></div>
+        
+        {/* Заголовок справа */}
+        <h1 className="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white">
+          Настройки
+        </h1>
+        
+        {/* Кнопка выхода справа */}
         <button 
           onClick={handleSignOut}
-          className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors group"
+          className="flex-shrink-0 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors group"
           title="Выйти из аккаунта"
         >
           <svg 
@@ -88,6 +99,7 @@ export default function ProfilePage() {
         </button>
       </header>
 
+      {/* Остальной код остается без изменений */}
       <div className="bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-gray-800 p-8 rounded-[40px] shadow-2xl shadow-slate-200/50 dark:shadow-none">
         <div className="flex flex-col items-center mb-8">
           <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 mb-4 overflow-hidden border-4 border-white dark:border-gray-900 shadow-md">

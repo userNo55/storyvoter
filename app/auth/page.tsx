@@ -61,7 +61,7 @@ export default function AuthPage() {
         <button type="button" onClick={() => setIsLogin(false)} className={`flex-1 py-2 rounded-xl text-sm font-bold ${!isLogin ? 'bg-white shadow' : 'text-slate-500'}`}>Регистрация</button>
       </div>
 
-      <h1 className="text-3xl font-black mb-6 text-center">{isLogin ? 'С возвращением' : 'Новый автор'}</h1>
+      <h1 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-center">{isLogin ? 'С возвращением!' : 'Новый пользователь'}</h1>
 
       <form onSubmit={handleAuth} className="space-y-4">
         {!isLogin && (

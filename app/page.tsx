@@ -96,7 +96,7 @@ export default function HomePage() {
             <h1 className="text-4xl font-black tracking-tighter uppercase text-slate-900 dark:text-white">Vilka</h1>
           </Link>
           
-          <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
             {userNickname ? (
               <>
                 <div className="flex items-center bg-slate-50 dark:bg-[#1A1A1A] p-1 rounded-full border border-slate-100 dark:border-gray-800">
@@ -129,14 +129,41 @@ export default function HomePage() {
                   </button>
                 </div>
 
-                <Link href="/dashboard" className="hidden md:block text-sm font-bold text-slate-600 dark:text-gray-400 hover:text-blue-600">Мои книги</Link>
-                <Link href="/profile" className="flex items-center gap-2 bg-slate-100 dark:bg-gray-800 px-4 py-2 rounded-full hover:bg-slate-200 transition">
+                {/* ССЫЛКА "МОИ КНИГИ" - ИКОНКА НА МОБИЛЬНЫХ, ТЕКСТ НА ДЕСКТОПЕ */}
+                <Link 
+                  href="/dashboard" 
+                  className="flex items-center text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  title="Мои книги"
+                >
+                  {/* ИКОНКА ДЛЯ МОБИЛЬНЫХ */}
+                  <svg 
+                    className="md:hidden w-6 h-6" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  
+                  {/* ТЕКСТ ДЛЯ ДЕСКТОПА */}
+                  <span className="hidden md:inline text-sm font-bold">Мои книги</span>
+                </Link>
+                
+                <Link 
+                  href="/profile" 
+                  className="flex items-center gap-2 bg-slate-100 dark:bg-gray-800 px-3 py-1.5 md:px-4 md:py-2 rounded-full hover:bg-slate-200 dark:hover:bg-gray-700 transition"
+                >
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-sm font-bold text-slate-800 dark:text-gray-200">{userNickname}</span>
+                  <span className="text-xs md:text-sm font-bold text-slate-800 dark:text-gray-200 truncate max-w-[80px] md:max-w-none">
+                    {userNickname}
+                  </span>
                 </Link>
               </>
             ) : (
-              <Link href="/auth" className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-full text-sm font-bold">Войти</Link>
+              <Link href="/auth" className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full text-xs md:text-sm font-bold">
+                Войти
+              </Link>
             )}
           </div>
         </header>
@@ -149,7 +176,9 @@ export default function HomePage() {
               {showFavoritesOnly ? "В избранном пока пусто." : "Книг пока нет."}
             </p>
             {showFavoritesOnly && (
-              <button onClick={() => setShowFavoritesOnly(false)} className="mt-4 text-blue-600 font-bold text-sm underline">Показать всё</button>
+              <button onClick={() => setShowFavoritesOnly(false)} className="mt-4 text-blue-600 dark:text-blue-400 font-bold text-sm underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+                Показать всё
+              </button>
             )}
           </div>
         ) : (
@@ -201,17 +230,13 @@ export default function HomePage() {
 
                   <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {/* Зеленый индикатор */}
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                      
-                      {/* Имя автора */}
                       <span className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.profiles?.pseudonym || 'Анонимный автор'}
                       </span>
                     </div>
                     
-                    {/* Стрелка */}
-                    <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                       </svg>
