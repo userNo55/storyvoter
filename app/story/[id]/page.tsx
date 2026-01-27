@@ -361,7 +361,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           <button
             onClick={handleCompleteStory}
             disabled={completing}
-            className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-lg shadow-purple-200 dark:shadow-purple-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {completing ? (
               <div className="flex items-center gap-2">
