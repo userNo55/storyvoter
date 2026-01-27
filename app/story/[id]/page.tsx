@@ -65,6 +65,42 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   const [userCoins, setUserCoins] = useState(0);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  // Функция для получения сохраненной открытой главы из localStorage
+  const getSavedOpenChapter = () => {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem(`openChapter_${id}`);
+    return saved || null;
+  };
+
+  // Функция для сохранения открытой главы в localStorage
+  const saveOpenChapter = (chapterId: string | null) => {
+    if (typeof window === 'undefined') return;
+    if (chapterId) {
+      localStorage.setItem(`openChapter_${id}`, chapterId);
+    } else {
+      localStorage.removeItem(`openChapter_${id}`);
+    }
+  };
+
+  // Находим последнюю главу с активным голосованием
+  const findLatestVotableChapter = (chapters: any[]) => {
+    if (chapters.length === 0) return null;
+    
+    // Сортируем по номеру главы (от большего к меньшему)
+    const sortedChapters = [...chapters].sort((a, b) => b.chapter_number - a.chapter_number);
+    
+    // Ищем первую главу с активным голосованием (не истекшим)
+    for (const chapter of sortedChapters) {
+      const isExpired = new Date(chapter.expires_at).getTime() < new Date().getTime();
+      if (!isExpired) {
+        return chapter.id;
+      }
+    }
+    
+    // Если нет глав с активным голосованием, возвращаем null
+    return null;
+  };
+
   useEffect(() => {
     async function loadData() {
       if (!id) return;
@@ -97,6 +133,19 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         setVotedChapters(votesData?.map((item: any) => item.chapter_id) || []);
         setStory(storyData);
         setChapters(chaptersData || []);
+
+        // Логика определения, какую главу открыть по умолчанию:
+        // 1. Сначала проверяем сохраненную главу из localStorage
+        const savedOpenChapter = getSavedOpenChapter();
+        if (savedOpenChapter) {
+          setOpenChapter(savedOpenChapter);
+        } else {
+          // 2. Если нет сохраненной, находим последнюю главу с активным голосованием
+          const latestVotableChapterId = findLatestVotableChapter(chaptersData || []);
+          if (latestVotableChapterId) {
+            setOpenChapter(latestVotableChapterId);
+          }
+        }
       } catch (error) {
         console.error('Ошибка загрузки:', error);
       } finally {
@@ -110,6 +159,13 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   // Проверка является ли пользователь автором
   const isAuthor = user && story && story.author_id === user.id;
 
+  // Обновляем функцию обработки клика по главе
+  const handleChapterClick = (chapterId: string) => {
+    const newOpenChapter = openChapter === chapterId ? null : chapterId;
+    setOpenChapter(newOpenChapter);
+    saveOpenChapter(newOpenChapter);
+  };
+
   // Обычное бесплатное голосование (вес 1)
   const handleVote = async (chapterId: string, optionId: string, currentVotes: number) => {
     if (!user) return router.push('/auth');
@@ -117,6 +173,9 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     if (error) return alert("Вы уже голосовали!");
 
     await supabase.from('options').update({ votes: currentVotes + 1 }).eq('id', optionId);
+    
+    // Сохраняем ID главы перед обновлением
+    saveOpenChapter(chapterId);
     window.location.reload();
   };
 
@@ -131,7 +190,11 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     });
 
     if (error) alert(error.message);
-    else window.location.reload();
+    else {
+      // Сохраняем ID главы перед обновлением
+      saveOpenChapter(chapterId);
+      window.location.reload();
+    }
   };
 
   // Удаление главы (доступно только автору и только для последней главы до окончания голосования)
@@ -164,9 +227,10 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
       // Обновляем локальное состояние
       setChapters(prevChapters => prevChapters.filter(c => c.id !== chapterId));
       
-      // Если удаляли открытую главу, закрываем её
+      // Если удаляли открытую главу, закрываем её и очищаем сохраненное состояние
       if (openChapter === chapterId) {
         setOpenChapter(null);
+        saveOpenChapter(null);
       }
 
       alert("Глава успешно удалена");
@@ -257,6 +321,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           const isExpired = new Date(chapter.expires_at).getTime() < new Date().getTime();
           const hasVoted = votedChapters.includes(chapter.id);
           const isLatest = chapter.chapter_number === latestChapterNumber;
+          const isLatestVotable = isLatest && !isExpired; // Последняя глава с активным голосованием
           const totalVotes = chapter.options?.reduce((sum: number, o: any) => sum + o.votes, 0) || 0;
           
           // Удаление доступно ТОЛЬКО для ПОСЛЕДНЕЙ главы И ТОЛЬКО до окончания голосования
@@ -264,14 +329,21 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
 
           return (
             <div key={chapter.id} className={`border rounded-[24px] overflow-hidden ${
-              isLatest ? 'border-blue-200 dark:border-blue-800 ring-2 ring-blue-50 dark:ring-blue-950/30' : 'opacity-80'
+              isLatestVotable ? 'border-blue-200 dark:border-blue-800 ring-2 ring-blue-50 dark:ring-blue-950/30' : 'opacity-80'
             } border-slate-200 dark:border-gray-800`}>
               <div className="flex justify-between items-center bg-white dark:bg-[#1A1A1A] hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
                 <button 
-                  onClick={() => setOpenChapter(openChapter === chapter.id ? null : chapter.id)}
+                  onClick={() => handleChapterClick(chapter.id)}
                   className="flex-1 text-left p-6 flex justify-between items-center"
                 >
-                  <span className="font-bold text-xl text-slate-900 dark:text-white">Глава {chapter.chapter_number}: {chapter.title}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xl text-slate-900 dark:text-white">Глава {chapter.chapter_number}: {chapter.title}</span>
+                    {isLatestVotable && !hasVoted && (
+                      <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full font-bold">
+                        ГОЛОСОВАТЬ!
+                      </span>
+                    )}
+                  </div>
                   <span className="text-slate-400 dark:text-gray-400 text-lg">{openChapter === chapter.id ? '−' : '+'}</span>
                 </button>
                 
@@ -305,13 +377,13 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                     </h3>
                     
                     {/* Таймер показывается ТОЛЬКО для последней главы И ТОЛЬКО если голосование не завершено */}
-                    {isLatest && !isExpired && <Countdown expiresAt={chapter.expires_at} />}
+                    {isLatestVotable && <Countdown expiresAt={chapter.expires_at} />}
 
                     <div className="space-y-3">
                       {chapter.options?.map((opt: any) => {
                         const percentage = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
                         // Голосовать можно ТОЛЬКО в последней главе И ТОЛЬКО если голосование не завершено
-                        const canVote = isLatest && !isExpired && !hasVoted && user;
+                        const canVote = isLatestVotable && !hasVoted && user;
 
                         return (
                           <div key={opt.id} className="space-y-2">
@@ -320,17 +392,17 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                               onClick={() => handleVote(chapter.id, opt.id, opt.votes)}
                               className="relative w-full text-left p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-gray-800/50 overflow-hidden transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-gray-700/50"
                             >
-                              {(hasVoted || isExpired || !isLatest) && (
+                              {(hasVoted || isExpired || !isLatestVotable) && (
                                 <div className="absolute top-0 left-0 h-full bg-blue-500/20 dark:bg-blue-500/40 transition-all" style={{ width: `${percentage}%` }} />
                               )}
                               <div className="relative flex justify-between z-10 text-slate-900 dark:text-white">
                                 <span>{opt.text}</span>
-                                {(hasVoted || isExpired || !isLatest) && <span>{percentage}%</span>}
+                                {(hasVoted || isExpired || !isLatestVotable) && <span>{percentage}%</span>}
                               </div>
                             </button>
 
                             {/* КНОПКА ПОДДЕРЖАТЬ (появляется после голосования) - ТОЛЬКО для последней главы */}
-                            {hasVoted && isLatest && !isExpired && (
+                            {hasVoted && isLatestVotable && (
                               <button 
                                 onClick={() => handlePaidVote(chapter.id, opt.id)}
                                 className="w-full py-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/30 transition"
@@ -343,7 +415,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                       })}
                     </div>
 
-                    {!user && isLatest && !isExpired && (
+                    {!user && isLatestVotable && (
                       <p className="text-center text-xs text-slate-500 dark:text-gray-400 mt-6 uppercase font-bold tracking-widest">
                         <Link href="/auth" className="text-blue-600 dark:text-blue-400 hover:underline">Войдите</Link>, чтобы участвовать
                       </p>
