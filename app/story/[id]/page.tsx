@@ -352,19 +352,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* --- БАННЕР ЗАВЕРШЕННОЙ ИСТОРИИ --- */}
-      {story.is_completed && (
-        <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 rounded-2xl text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-            <span className="text-purple-600 dark:text-purple-400 font-bold">🏁 История завершена</span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-gray-400">Автор завершил эту историю, новые главы не добавляются</p>
-        </div>
-      )}
-
+      
       <p className="text-slate-500 dark:text-gray-400 text-lg mb-10 italic">{story.description}</p>
 
       {/* --- КНОПКА ЗАВЕРШЕНИЯ ИСТОРИИ (только для автора) --- */}
@@ -504,7 +492,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                         История завершена
                       </h3>
                       <p className="text-slate-500 dark:text-gray-400">
-                        Автор завершил эту историю. Читайте финал и обсуждайте в комментариях!
+                        Автор завершил эту историю. Читайте целиком!
                       </p>
                     </div>
                   )}
