@@ -10,7 +10,6 @@ export default function HomePage() {
   const [userId, setUserId] = useState<string | null>(null);
   
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showActiveOnly, setShowActiveOnly] = useState(false); // Новый фильтр - только активные
   const [sortOrder, setSortOrder] = useState<'new' | 'engagement'>('new');
 
   async function loadData() {
@@ -31,7 +30,6 @@ export default function HomePage() {
       .from('stories')
       .select(`
         *, 
-        is_completed,  // ← ДОБАВЬ ЭТУ СТРОЧКУ!
         profiles(pseudonym), 
         chapters(id, expires_at, chapter_number),
         favorites(user_id)
@@ -85,19 +83,9 @@ export default function HomePage() {
     }
   };
 
-  const displayedStories = stories.filter(story => {
-    // Применяем фильтр избранного
-    if (showFavoritesOnly && (!story.favorites || story.favorites.length === 0)) {
-      return false;
-    }
-    
-    // Применяем фильтр активных историй
-    if (showActiveOnly && story.is_completed) {
-      return false;
-    }
-    
-    return true;
-  });
+  const displayedStories = showFavoritesOnly 
+    ? stories.filter(s => s.favorites && s.favorites.length > 0)
+    : stories;
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A] transition-colors duration-300">
@@ -126,22 +114,6 @@ export default function HomePage() {
                     </svg>
                   </button>
 
-                  {/* НОВАЯ КНОПКА ФИЛЬТРА АКТИВНЫХ ИСТОРИЙ */}
-                  <button 
-                    onClick={() => setShowActiveOnly(!showActiveOnly)}
-                    className={`p-2 rounded-full transition-all duration-300 ${
-                      showActiveOnly 
-                        ? 'text-green-500 bg-green-50 dark:bg-green-950/30' 
-                        : 'bg-transparent text-slate-400 hover:text-green-500'
-                    }`}
-                    title={showActiveOnly ? "Показать все истории" : "Показать только активные"}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M22 4L12 14.01l-3-3" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-
                   <button 
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     className={`p-2 rounded-full transition-all duration-300 ${
@@ -149,7 +121,7 @@ export default function HomePage() {
                         ? 'text-red-500' 
                         : 'bg-transparent text-slate-400 hover:text-red-500'
                     }`}
-                    title={showFavoritesOnly ? "Показать все истории" : "Показать избранное"}
+                    title={showFavoritesOnly ? "Убрать фильтр" : "Показать избранное"}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill={showFavoritesOnly ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -196,55 +168,15 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* Информация о примененных фильтрах */}
-        {(showFavoritesOnly || showActiveOnly) && (
-          <div className="mb-6 flex flex-wrap gap-2">
-            {showFavoritesOnly && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-full">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-                Только избранное
-              </span>
-            )}
-            {showActiveOnly && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 px-3 py-1 rounded-full">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M22 4L12 14.01l-3-3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Только активные
-              </span>
-            )}
-            <button 
-              onClick={() => {
-                setShowFavoritesOnly(false);
-                setShowActiveOnly(false);
-              }}
-              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Сбросить фильтры
-            </button>
-          </div>
-        )}
-
         {loading ? (
           <div className="text-center py-20 text-slate-400 dark:text-gray-600 font-bold animate-pulse">Загрузка...</div>
         ) : displayedStories.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 dark:bg-[#1A1A1A] rounded-[40px] border border-slate-100 dark:border-gray-800">
             <p className="text-slate-400 dark:text-gray-500 font-medium">
-              {showFavoritesOnly ? "В избранном пока пусто." : 
-               showActiveOnly ? "Активных историй пока нет." : 
-               "Книг пока нет."}
+              {showFavoritesOnly ? "В избранном пока пусто." : "Книг пока нет."}
             </p>
-            {(showFavoritesOnly || showActiveOnly) && (
-              <button 
-                onClick={() => {
-                  setShowFavoritesOnly(false);
-                  setShowActiveOnly(false);
-                }} 
-                className="mt-4 text-blue-600 dark:text-blue-400 font-bold text-sm underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-              >
+            {showFavoritesOnly && (
+              <button onClick={() => setShowFavoritesOnly(false)} className="mt-4 text-blue-600 dark:text-blue-400 font-bold text-sm underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
                 Показать всё
               </button>
             )}
@@ -253,7 +185,6 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {displayedStories.map((story) => {
               const isFavorite = story.favorites && story.favorites.length > 0;
-              const isCompleted = story.is_completed;
 
               return (
                 <Link 
@@ -266,23 +197,6 @@ export default function HomePage() {
                       <span className="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-gray-800 px-3 py-1.5 rounded-full text-slate-500 dark:text-gray-400">
                         {story.age_rating || '16+'}
                       </span>
-                      
-                      {/* Статус завершения истории */}
-                      {isCompleted ? (
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-purple-100 dark:bg-purple-950/30 px-3 py-1.5 rounded-full text-purple-600 dark:text-purple-400 flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                          </svg>
-                          ЗАВЕРШЕНА
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-green-100 dark:bg-green-950/30 px-3 py-1.5 rounded-full text-green-600 dark:text-green-400 flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <path d="M12 2v20M2 12h20" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                          В РАЗВИТИИ
-                        </span>
-                      )}
                       
                       <button 
                         onClick={(e) => toggleFavorite(e, story.id, isFavorite)}
@@ -316,26 +230,16 @@ export default function HomePage() {
 
                   <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-purple-400' : 'bg-green-400 animate-pulse'}`}></div>
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                       <span className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.profiles?.pseudonym || 'Анонимный автор'}
                       </span>
                     </div>
                     
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isCompleted 
-                        ? 'bg-purple-600 dark:bg-purple-700 text-white' 
-                        : 'bg-slate-900 dark:bg-gray-800 text-white group-hover:bg-blue-600'
-                    }`}>
-                      {isCompleted ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                      )}
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
                     </div>
                   </div>
                 </Link>
