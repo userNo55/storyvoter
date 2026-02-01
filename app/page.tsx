@@ -31,6 +31,7 @@ export default function HomePage() {
       .from('stories')
       .select(`
         *, 
+        is_completed,  // ← ДОБАВЬ ЭТУ СТРОЧКУ!
         profiles(pseudonym), 
         chapters(id, expires_at, chapter_number),
         favorites(user_id)
