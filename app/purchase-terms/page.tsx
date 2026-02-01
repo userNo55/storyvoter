@@ -12,7 +12,7 @@ export default function PurchaseTerms() {
         <h1 className="text-3xl font-black tracking-tight mt-6 uppercase">Соглашение о платных услугах</h1>
         <div className="flex flex-col md:flex-row md:justify-between mt-2 text-slate-400 text-xs font-medium gap-2">
           <span>Платформа VILKA</span>
-          <span>Редакция от 21 января 2026 г.</span>
+          <span>Редакция от 01 февраля 2026 г.</span>
         </div>
       </header>
 
