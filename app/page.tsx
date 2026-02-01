@@ -236,7 +236,7 @@ export default function HomePage() {
                     <div className="flex gap-2">
                       {/* ЗНАЧОК ЗАВЕРШЕНИЯ ПЕРЕД МОЛНИЕЙ */}
                       {isCompleted && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-950/30 px-2 py-1 rounded-full">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                           </svg>
