@@ -21,8 +21,8 @@ export default function PurchaseTerms() {
         <section className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
           <p className="text-sm font-bold mb-1">Исполнитель:</p>
           <p className="text-sm text-slate-600">
-            [ВАШЕ Ф.И.О.] <br />
-            ИНН: [ВАШ_ИНН] <br />
+            [Новикова Наталья Сергеевна] <br />
+            ИНН: [550516382260] <br />
             Статус: Плательщик налога на профессиональный доход (самозанятый)
           </p>
         </section>
@@ -83,12 +83,12 @@ export default function PurchaseTerms() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-slate-900 text-white p-8 rounded-[32px]">
             <div>
               <p className="text-slate-400 uppercase text-[10px] font-bold tracking-widest mb-2">Исполнитель</p>
-              <p className="font-bold text-base">[ВАШЕ Ф.И.О.]</p>
-              <p>ИНН: [ВАШ_ИНН]</p>
+              <p className="font-bold text-base">[Новикова Наталья Сергеевна]</p>
+              <p>ИНН: [550516382260]</p>
             </div>
             <div>
               <p className="text-slate-400 uppercase text-[10px] font-bold tracking-widest mb-2">Контакты</p>
-              <p className="font-bold text-base">[ВАШ_EMAIL]</p>
+              <p className="font-bold text-base">[nataly.tyler@gmail.com]</p>
               <p className="text-slate-400 mt-1 italic">Для претензий и вопросов по оплате</p>
             </div>
           </div>
