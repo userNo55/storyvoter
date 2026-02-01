@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import Link from 'next/link';
+// Импортируем новую иконку
+import { FaRegClock } from 'react-icons/fa';
 
 export default function HomePage() {
   const [stories, setStories] = useState<any[]>([]);
@@ -10,7 +12,7 @@ export default function HomePage() {
   const [userId, setUserId] = useState<string | null>(null);
   
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showActiveOnly, setShowActiveOnly] = useState(false); // Новый фильтр
+  const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [sortOrder, setSortOrder] = useState<'new' | 'engagement'>('new');
 
   async function loadData() {
@@ -121,7 +123,7 @@ export default function HomePage() {
                     </svg>
                   </button>
 
-                  {/* НОВАЯ КНОПКА ФИЛЬТРА АКТИВНЫХ ИСТОРИЙ */}
+                  {/* КНОПКА ФИЛЬТРА АКТИВНЫХ ИСТОРИЙ С НОВОЙ ИКОНКОЙ */}
                   <button 
                     onClick={() => setShowActiveOnly(!showActiveOnly)}
                     className={`p-2 rounded-full transition-all duration-300 ${
@@ -131,10 +133,8 @@ export default function HomePage() {
                     }`}
                     title={showActiveOnly ? "Показать все истории" : "Показать только активные"}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M22 4L12 14.01l-3-3" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    {/* ЗАМЕНА ИКОНКИ */}
+                    <FaRegClock className="w-5 h-5" />
                   </button>
 
                   <button 
@@ -152,13 +152,11 @@ export default function HomePage() {
                   </button>
                 </div>
 
-                {/* ССЫЛКА "МОИ КНИГИ" - ИКОНКА НА МОБИЛЬНЫХ, ТЕКСТ НА ДЕСКТОПЕ */}
                 <Link 
                   href="/dashboard" 
                   className="flex items-center text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   title="Мои книги"
                 >
-                  {/* ИКОНКА ДЛЯ МОБИЛЬНЫХ */}
                   <svg 
                     className="md:hidden w-6 h-6" 
                     fill="none" 
@@ -169,7 +167,6 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                   
-                  {/* ТЕКСТ ДЛЯ ДЕСКТОПА */}
                   <span className="hidden md:inline text-sm font-bold">Мои книги</span>
                 </Link>
                 
@@ -210,7 +207,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {displayedStories.map((story) => {
               const isFavorite = story.favorites && story.favorites.length > 0;
-              const isCompleted = story.is_completed; // Используем поле is_completed из stories
+              const isCompleted = story.is_completed;
 
               return (
                 <Link 
@@ -223,24 +220,6 @@ export default function HomePage() {
                       <span className="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-gray-800 px-3 py-1.5 rounded-full text-slate-500 dark:text-gray-400">
                         {story.age_rating || '16+'}
                       </span>
-                      
-                      {/* СТАТУС ЗАВЕРШЕНИЯ ИСТОРИИ */}
-                      {isCompleted ? (
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-purple-100 dark:bg-purple-950/30 px-3 py-1.5 rounded-full text-purple-600 dark:text-purple-400 flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                          </svg>
-                          ЗАВЕРШЕНА
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-green-100 dark:bg-green-950/30 px-3 py-1.5 rounded-full text-green-600 dark:text-green-400 flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 8v8M8 12h8" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                          В РАЗВИТИИ
-                        </span>
-                      )}
                       
                       <button 
                         onClick={(e) => toggleFavorite(e, story.id, isFavorite)}
@@ -255,9 +234,19 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex gap-2">
+                      {/* ЗНАЧОК ЗАВЕРШЕНИЯ ПЕРЕД МОЛНИЕЙ */}
+                      {isCompleted && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                          </svg>
+                        </span>
+                      )}
+                      
                       <span className="flex items-center gap-1 text-[10px] font-bold text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-3 py-1 rounded-full uppercase">
                         ⚡ {story.engagement || 0}
                       </span>
+                      
                       <span className="text-[10px] font-bold text-blue-500 bg-slate-100 dark:bg-blue-950/30 px-3 py-1 rounded-full uppercase">
                         ГЛАВ: {story.chapters?.length || 0} 
                       </span>
@@ -274,26 +263,18 @@ export default function HomePage() {
 
                   <div className="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-purple-400' : 'bg-green-400 animate-pulse'}`}></div>
+                      {/* ТОЧКА ВСЕГДА ЗЕЛЕНАЯ */}
+                      <div className="w-2 h-2 rounded-full bg-green-400"></div>
                       <span className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.profiles?.pseudonym || 'Анонимный автор'}
                       </span>
                     </div>
                     
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isCompleted 
-                        ? 'bg-purple-600 dark:bg-purple-700 text-white' 
-                        : 'bg-slate-900 dark:bg-gray-800 text-white group-hover:bg-blue-600'
-                    }`}>
-                      {isCompleted ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                      )}
+                    {/* КНОПКА ЧТЕНИЯ - ВСЕГДА СЕРАЯ */}
+                    <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
                     </div>
                   </div>
                 </Link>
