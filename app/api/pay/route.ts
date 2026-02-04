@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ЯВНО УКАЗАННЫЙ return_url - меняйте этот URL по необходимости
-    const returnUrl = 'https://storyvoter.vercel.app/payment-success';
+    const returnUrl = 'https://vilkastory.vercel.app/payment-success';
     
     console.log('🔗 ЖЕСТКО УКАЗАННЫЙ return_url:', returnUrl);
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         type: 'redirect',
         return_url: returnUrl, // Прямое использование
       },
-      description: `Пополнение баланса на ${coins} голосов в StoryVoter`,
+      description: `Пополнение баланса на ${coins} голосов в vilkastory`,
       metadata: {
         userId,
         coins,
