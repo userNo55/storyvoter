@@ -534,7 +534,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                               } ${!canVote ? 'opacity-80' : ''}`}>
                                 {/* ВЕРХНЯЯ ЧАСТЬ - ТЕКСТ И ПРОЦЕНТЫ */}
                                 <div className="p-4">
-                                  <div className="flex justify-between items-start gap-4">
+                                  <div className="flex justify-between items-center gap-4">
                                     {/* ТЕКСТ ОПЦИИ */}
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2">
@@ -557,17 +557,28 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                       </p>
                                     </div>
                                     
-                                    {/* ПРОЦЕНТЫ (если голосовали) */}
-                                    {(hasVoted || isExpired) && totalVotes > 0 && (
-                                      <div className="text-right">
-                                        <div className="text-2xl font-black text-slate-900 dark:text-white">
-                                          {percentage}%
+                                    {/* ПРАВАЯ ЧАСТЬ: ПРОЦЕНТЫ И КНОПКА */}
+                                    <div className="flex items-center gap-4">
+                                      {/* ПРОЦЕНТЫ (если голосовали) */}
+                                      {(hasVoted || isExpired) && totalVotes > 0 && (
+                                        <div className="text-right min-w-[60px]">
+                                          <div className="text-2xl font-black text-slate-900 dark:text-white">
+                                            {percentage}%
+                                          </div>
                                         </div>
-                                        <div className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-                                          доля
-                                        </div>
-                                      </div>
-                                    )}
+                                      )}
+                                      
+                                      {/* КНОПКА ПОВЛИЯТЬ */}
+                                      {hasVoted && isLatestVotable && isAuthorIdMatch && (
+                                        <button 
+                                          onClick={() => handlePaidVote(chapter.id, opt.id)}
+                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+                                        >
+                                          <span className="text-yellow-300">⚡</span>
+                                          Повлиять
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                   
                                   {/* ПОЛОСКА ПРОГРЕССА (если голосовали) */}
@@ -600,29 +611,6 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                   </div>
                                 )}
                               </div>
-
-                              {/* КНОПКА ПЛАТНОГО ГОЛОСОВАНИЯ */}
-                              {hasVoted && isLatestVotable && isAuthorIdMatch && (
-                                <div className="pl-4">
-                                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg">
-                                    <div className="flex-1">
-                                      <div className="text-sm font-bold text-blue-700 dark:text-blue-400">
-                                        Усилить влияние
-                                      </div>
-                                      <div className="text-xs text-blue-600 dark:text-blue-300">
-                                        1 ⚡ = 3 голоса для этого варианта
-                                      </div>
-                                    </div>
-                                    <button 
-                                      onClick={() => handlePaidVote(chapter.id, opt.id)}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
-                                    >
-                                      <span className="text-yellow-300">⚡</span>
-                                      Повлиять
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           );
                         })}
