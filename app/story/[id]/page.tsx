@@ -557,10 +557,11 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                       {hasVoted && isLatestVotable && isAuthorIdMatch && (
                                         <button 
                                           onClick={() => handlePaidVote(chapter.id, opt.id)}
-                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
+                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-between whitespace-nowrap w-full min-w-[140px]"
                                         >
-                                          <span className="text-yellow-300 mr-1">⚡</span>
+                                          <span className="text-yellow-300">⚡</span>
                                           <span>Поддержать</span>
+                                          <span className="w-4"></span> {/* Невидимый элемент для балансировки */}
                                         </button>
                                       )}
                                     </div>
