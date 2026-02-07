@@ -110,13 +110,13 @@ function ShareButton({
         className="w-full py-2 text-sm font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/30 transition flex items-center justify-center gap-2"
       >
         <FaShare className="w-4 h-4" />
-        Позвать друзей / Поделиться
+        Поделиться
       </button>
 
       {showSharePanel && (
         <div className="mt-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-lg">
           <p className="text-xs text-slate-500 dark:text-gray-400 mb-3 text-center">
-            Случайный текст для расшаривания:
+            Текст поста:
           </p>
           <div className="text-sm text-slate-700 dark:text-gray-300 mb-4 p-3 bg-slate-50 dark:bg-gray-900 rounded-lg border border-slate-100 dark:border-gray-700">
             {getRandomMessage()}
