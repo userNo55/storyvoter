@@ -559,7 +559,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                           onClick={() => handlePaidVote(chapter.id, opt.id)}
                                           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
                                         >
-                                          <span className="text-yellow-300 text-lg">⚡</span>
+                                          <span className="text-yellow-300 mr-1">⚡</span>
                                           <span>Поддержать</span>
                                         </button>
                                       )}
