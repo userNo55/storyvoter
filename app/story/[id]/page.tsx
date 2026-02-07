@@ -507,54 +507,146 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                       
                       {isLatestVotable && <Countdown expiresAt={chapter.expires_at} />}
 
-                      <div className="space-y-3">
-                        {chapter.options?.map((opt: any) => {
+                      {/* ОБЩАЯ СТАТИСТИКА */}
+                      {totalVotes > 0 && (hasVoted || isExpired) && (
+                        <div className="mb-6 p-4 bg-slate-50 dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-600 dark:text-gray-400">Всего голосов:</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{totalVotes}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* КОНТЕЙНЕР ДЛЯ ОПЦИЙ */}
+                      <div className="space-y-4">
+                        {chapter.options?.map((opt: any, index: number) => {
                           const percentage = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
                           const canVote = isLatestVotable && !hasVoted && user;
+                          const hasVotes = opt.votes > 0;
 
                           return (
-                            <div key={opt.id} className="space-y-2">
-                              <button 
-                                disabled={!canVote}
-                                onClick={() => handleVote(chapter.id, opt.id, opt.votes)}
-                                className="relative w-full text-left p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-gray-800/50 overflow-hidden transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-gray-700/50"
-                              >
-                                {(hasVoted || isExpired || !isLatestVotable) && (
-                                  <div className="absolute top-0 left-0 h-full bg-blue-500/20 dark:bg-blue-500/40 transition-all" style={{ width: `${percentage}%` }} />
-                                )}
-                                <div className="relative flex justify-between z-10 text-slate-900 dark:text-white">
-                                  <span>{opt.text}</span>
-                                  {(hasVoted || isExpired || !isLatestVotable) && <span>{percentage}%</span>}
+                            <div key={opt.id} className="space-y-3">
+                              {/* ОСНОВНАЯ КАРТОЧКА ОПЦИИ */}
+                              <div className={`relative rounded-xl border transition-all ${
+                                canVote 
+                                  ? 'border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 bg-white dark:bg-gray-800 cursor-pointer' 
+                                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-gray-800/50'
+                              } ${!canVote ? 'opacity-80' : ''}`}>
+                                {/* ВЕРХНЯЯ ЧАСТЬ - ТЕКСТ И ПРОЦЕНТЫ */}
+                                <div className="p-4">
+                                  <div className="flex justify-between items-start gap-4">
+                                    {/* ТЕКСТ ОПЦИИ */}
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className={`text-xs font-bold px-2 py-1 rounded ${
+                                          index === 0 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+                                          index === 1 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                          index === 2 ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
+                                          'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                                        }`}>
+                                          Вариант {index + 1}
+                                        </span>
+                                        {hasVotes && (
+                                          <span className="text-xs font-bold text-slate-500 dark:text-gray-400">
+                                            {opt.votes} голос{opt.votes === 1 ? '' : 'а'}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-slate-900 dark:text-white font-medium">
+                                        {opt.text}
+                                      </p>
+                                    </div>
+                                    
+                                    {/* ПРОЦЕНТЫ (если голосовали) */}
+                                    {(hasVoted || isExpired) && totalVotes > 0 && (
+                                      <div className="text-right">
+                                        <div className="text-2xl font-black text-slate-900 dark:text-white">
+                                          {percentage}%
+                                        </div>
+                                        <div className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                          доля
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* ПОЛОСКА ПРОГРЕССА (если голосовали) */}
+                                  {(hasVoted || isExpired) && hasVotes && (
+                                    <div className="mt-4">
+                                      <div className="h-2 bg-slate-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                        <div 
+                                          className={`h-full rounded-full transition-all duration-500 ${
+                                            index === 0 ? 'bg-blue-500' :
+                                            index === 1 ? 'bg-green-500' :
+                                            index === 2 ? 'bg-purple-500' :
+                                            'bg-orange-500'
+                                          }`}
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                              </button>
+                                
+                                {/* КНОПКА ГОЛОСОВАНИЯ (если можно голосовать) */}
+                                {canVote && (
+                                  <div className="border-t border-slate-100 dark:border-gray-700 p-4">
+                                    <button 
+                                      onClick={() => handleVote(chapter.id, opt.id, opt.votes)}
+                                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-bold transition-colors shadow-sm"
+                                    >
+                                      Проголосовать
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
 
-                              {/* КНОПКА ПЛАТНОГО ГОЛОСОВАНИЯ - ПОКАЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ ИСТОРИЯ СОЗДАНА АВТОРОМ С ID 01db5da0-7374-40ac-b6a5-63be48bc7410 */}
+                              {/* КНОПКА ПЛАТНОГО ГОЛОСОВАНИЯ */}
                               {hasVoted && isLatestVotable && isAuthorIdMatch && (
-                                <button 
-                                  onClick={() => handlePaidVote(chapter.id, opt.id)}
-                                  className="w-full py-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/30 transition"
-                                >
-                                  Повлиять (1 ⚡ = 3 голоса)
-                                </button>
+                                <div className="pl-4">
+                                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-bold text-blue-700 dark:text-blue-400">
+                                        Усилить влияние
+                                      </div>
+                                      <div className="text-xs text-blue-600 dark:text-blue-300">
+                                        1 ⚡ = 3 голоса для этого варианта
+                                      </div>
+                                    </div>
+                                    <button 
+                                      onClick={() => handlePaidVote(chapter.id, opt.id)}
+                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                      <span className="text-yellow-300">⚡</span>
+                                      Повлиять
+                                    </button>
+                                  </div>
+                                </div>
                               )}
                             </div>
                           );
                         })}
                       </div>
 
-                      {/* КНОПКА "ПОДЕЛИТЬСЯ" - ПОЯВЛЯЕТСЯ ПОСЛЕ ГОЛОСОВАНИЯ (ВСЕМ) */}
+                      {/* КНОПКА "ПОДЕЛИТЬСЯ" - ПОЯВЛЯЕТСЯ ПОСЛЕ ГОЛОСОВАНИЯ */}
                       {hasVoted && isLatestVotable && (
-                        <ShareButton 
-                          storyTitle={story.title}
-                          chapterNumber={chapter.chapter_number}
-                          chapterId={id}
-                        />
+                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-gray-700">
+                          <ShareButton 
+                            storyTitle={story.title}
+                            chapterNumber={chapter.chapter_number}
+                            chapterId={id}
+                          />
+                        </div>
                       )}
 
                       {!user && isLatestVotable && (
-                        <p className="text-center text-xs text-slate-500 dark:text-gray-400 mt-6 uppercase font-bold tracking-widest">
-                          <Link href="/auth" className="text-blue-600 dark:text-blue-400 hover:underline">Войдите</Link>, чтобы участвовать
-                        </p>
+                        <div className="mt-8 p-4 bg-slate-50 dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700">
+                          <p className="text-center text-sm text-slate-600 dark:text-gray-400">
+                            <Link href="/auth" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+                              Войдите
+                            </Link>, чтобы участвовать в голосовании
+                          </p>
+                        </div>
                       )}
                     </div>
                   ) : (
