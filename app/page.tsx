@@ -102,7 +102,10 @@ export default function HomePage() {
         
         <header className="flex justify-between items-center mb-12 py-6 border-b border-slate-100 dark:border-gray-800">
           <Link href="/">
-            <h1 className="text-4xl font-black tracking-tighter uppercase text-slate-900 dark:text-white">Vilka</h1>
+            <h1 className="text-4xl font-black tracking-tighter uppercase 
+              bg-[url('/favicon.png')] bg-cover bg-center bg-clip-text text-transparent">
+              Vilka
+            </h1>
           </Link>
           
           <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
