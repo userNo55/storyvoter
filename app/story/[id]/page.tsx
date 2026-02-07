@@ -543,8 +543,8 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                       </p>
                                     </div>
                                     
-                                    {/* ПРАВАЯ ЧАСТЬ: ПРОЦЕНТЫ И КНОПКА */}
-                                    <div className="flex items-center gap-3">
+                                    {/* ПРАВАЯ ЧАСТЬ: ПРОЦЕНТЫ И КНОПКА (десктоп) */}
+                                    <div className="hidden sm:flex items-center gap-3">
                                       {/* ПРОЦЕНТЫ (если голосовали) */}
                                       {(hasVoted || isExpired) && totalVotes > 0 && (
                                         <div className="text-right min-w-[70px]">
@@ -554,15 +554,15 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                         </div>
                                       )}
                                       
-                                      {/* КНОПКА ПОДДЕРЖАТЬ */}
+                                      {/* КНОПКА ПОДДЕРЖАТЬ (десктоп) */}
                                       {hasVoted && isLatestVotable && isAuthorIdMatch && (
                                         <button 
                                           onClick={() => handlePaidVote(chapter.id, opt.id)}
-                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-between whitespace-nowrap w-full min-w-[140px]"
+                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-between whitespace-nowrap min-w-[140px]"
                                         >
                                           <span className="text-yellow-300">⚡</span>
                                           <span>Поддержать</span>
-                                          <span className="w-4"></span> {/* Невидимый элемент для балансировки */}
+                                          <span className="w-4"></span>
                                         </button>
                                       )}
                                     </div>
@@ -584,6 +584,32 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                       </div>
                                     </div>
                                   )}
+                                  
+                                  {/* НИЖНЯЯ ЧАСТЬ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ */}
+                                  <div className="mt-4 sm:hidden space-y-3">
+                                    {/* ПРОЦЕНТЫ НА МОБИЛЬНЫХ (если голосовали) */}
+                                    {(hasVoted || isExpired) && totalVotes > 0 && (
+                                      <div className="text-center">
+                                        <div className="text-2xl font-black text-slate-900 dark:text-white">
+                                          {percentage}%
+                                        </div>
+                                        <div className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                          голосов
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* КНОПКА ПОДДЕРЖАТЬ (мобильная версия - внизу) */}
+                                    {hasVoted && isLatestVotable && isAuthorIdMatch && (
+                                      <button 
+                                        onClick={() => handlePaidVote(chapter.id, opt.id)}
+                                        className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                      >
+                                        <span className="text-yellow-300">⚡</span>
+                                        Поддержать
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                                 
                                 {/* КНОПКА ГОЛОСОВАНИЯ (если можно голосовать) */}
