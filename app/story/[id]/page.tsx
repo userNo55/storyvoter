@@ -530,8 +530,8 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2">
                                         <span className={`text-xs font-bold px-2 py-1 rounded ${
-                                          index === 0 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-                                          index === 1 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                          index === 0 ? 'bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-400' :
+                                          index === 1 ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400' :
                                           index === 2 ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
                                           'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
                                         }`}>
