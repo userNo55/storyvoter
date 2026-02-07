@@ -506,17 +506,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                       </h3>
                       
                       {isLatestVotable && <Countdown expiresAt={chapter.expires_at} />}
-
-                      {/* ОБЩАЯ СТАТИСТИКА */}
-                      {totalVotes > 0 && (hasVoted || isExpired) && (
-                        <div className="mb-6 p-4 bg-slate-50 dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-600 dark:text-gray-400">Всего голосов:</span>
-                            <span className="font-bold text-slate-900 dark:text-white">{totalVotes}</span>
-                          </div>
-                        </div>
-                      )}
-
+                  
                       {/* КОНТЕЙНЕР ДЛЯ ОПЦИЙ */}
                       <div className="space-y-4">
                         {chapter.options?.map((opt: any, index: number) => {
@@ -556,7 +546,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                     <div className="flex items-center gap-3">
                                       {/* ПРОЦЕНТЫ (если голосовали) */}
                                       {(hasVoted || isExpired) && totalVotes > 0 && (
-                                        <div className="text-right">
+                                        <div className="text-right min-w-[70px]">
                                           <div className="text-2xl font-black text-slate-900 dark:text-white">
                                             {percentage}%
                                           </div>
@@ -567,10 +557,10 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                                       {hasVoted && isLatestVotable && isAuthorIdMatch && (
                                         <button 
                                           onClick={() => handlePaidVote(chapter.id, opt.id)}
-                                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-1 whitespace-nowrap"
+                                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
                                         >
-                                          <span className="text-yellow-300">⚡</span>
-                                          Поддержать
+                                          <span className="text-yellow-300 text-lg">⚡</span>
+                                          <span>Поддержать</span>
                                         </button>
                                       )}
                                     </div>
