@@ -34,16 +34,9 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
   }, [expiresAt]);
 
   return (
-    <div className="font-sans text-orange-600 text-xl mb-4 text-center bg-gray-50/50 dark:bg-gray-800 py-4 px-6 rounded-3xl shadow-2xl shadow-orange-200/50 dark:shadow-none flex items-center justify-center gap-4">
-      {/* Текст: плотный, без наклона, современный санс */}
-      <span className="font-semibold tracking-tight text-sm opacity-80">
-        До конца голосования:
-      </span>
-      
-      {/* Цифры: моноширинные, четкие, без наклона */}
-      <span className="font-mono font-black text-2xl tabular-nums tracking-tight">
-        {timeLeft}
-      </span>
+    <div className="font-sans text-orange-600 dark:text-orange-400 text-xl mb-4 text-center bg-white dark:bg-gray-800 py-3 px-6 rounded-2xl border-l-8 border-orange-500 shadow-xl shadow-orange-500/10 flex items-center justify-center gap-3">
+      <span className="font-semibold tracking-tight uppercase text-sm text-gray-500">До конца:</span>
+      <span className="font-mono font-black text-2xl tabular-nums tracking-tight">{timeLeft}</span>
     </div>
   );
 }
