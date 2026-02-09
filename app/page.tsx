@@ -111,14 +111,57 @@ export default function HomePage() {
           <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
             {userNickname ? (
               <>
-                {/* КНОПКА "МОИ КНИГИ" ДЛЯ МОБИЛЬНЫХ */}
+                <div className="flex items-center bg-slate-50 dark:bg-[#1A1A1A] p-0.5 md:p-1 rounded-full border border-slate-100 dark:border-gray-800 scale-90 md:scale-100">
+                  <button 
+                    onClick={() => setSortOrder(sortOrder === 'new' ? 'engagement' : 'new')}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      sortOrder === 'engagement' 
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/50'
+                        : 'bg-transparent text-slate-400 hover:text-orange-500'
+                    }`}
+                    title={sortOrder === 'engagement' ? "Сортировка: Популярные" : "Сортировать по вовлеченности"}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                  </button>
+
+                  {/* КНОПКА ФИЛЬТРА АКТИВНЫХ ИСТОРИЙ С НОВОЙ ИКОНКОЙ */}
+                  <button 
+                    onClick={() => setShowActiveOnly(!showActiveOnly)}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      showActiveOnly 
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-900/50'
+                        : 'bg-transparent text-slate-400 hover:text-green-500'
+                    }`}
+                    title={showActiveOnly ? "Показать все истории" : "Показать только активные"}
+                  >
+                    {/* ЗАМЕНА ИКОНКИ */}
+                    <FaRegClock className="w-5 h-5" />
+                  </button>
+
+                  <button 
+                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      showFavoritesOnly 
+                        ? 'bg-red-500 text-white shadow-lg shadow-red-900/50'
+                        : 'bg-transparent text-slate-400 hover:text-red-500'
+                    }`}
+                    title={showFavoritesOnly ? "Показать все истории" : "Показать избранное"}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
+                </div>
+
                 <Link 
                   href="/dashboard" 
-                  className="md:hidden flex items-center text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="flex items-center text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   title="Мои книги"
                 >
                   <svg 
-                    className="w-6 h-6" 
+                    className="md:hidden w-6 h-6" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24" 
@@ -126,9 +169,10 @@ export default function HomePage() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
+                  
+                  <span className="hidden md:inline text-sm font-bold">Мои книги</span>
                 </Link>
                 
-                {/* ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */}
                 <Link 
                   href="/profile" 
                   className="flex items-center gap-2 bg-slate-100 dark:bg-gray-800 px-3 py-1.5 md:px-4 md:py-2 rounded-full hover:bg-slate-200 dark:hover:bg-gray-700 transition"
@@ -146,51 +190,6 @@ export default function HomePage() {
             )}
           </div>
         </header>
-
-        {/* ФИЛЬТРЫ ДЛЯ ДЕСКТОПА (остаются наверху) */}
-        <div className="hidden md:flex items-center justify-center mb-8">
-          <div className="flex items-center bg-slate-50 dark:bg-[#1A1A1A] p-1 rounded-full border border-slate-100 dark:border-gray-800">
-            <button 
-              onClick={() => setSortOrder(sortOrder === 'new' ? 'engagement' : 'new')}
-              className={`p-2 rounded-full transition-all duration-300 ${
-                sortOrder === 'engagement' 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/50'
-                  : 'bg-transparent text-slate-400 hover:text-orange-500'
-              }`}
-              title={sortOrder === 'engagement' ? "Сортировка: Популярные" : "Сортировать по вовлеченности"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-            </button>
-
-            <button 
-              onClick={() => setShowActiveOnly(!showActiveOnly)}
-              className={`p-2 rounded-full transition-all duration-300 ${
-                showActiveOnly 
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-900/50'
-                  : 'bg-transparent text-slate-400 hover:text-green-500'
-              }`}
-              title={showActiveOnly ? "Показать все истории" : "Показать только активные"}
-            >
-              <FaRegClock className="w-5 h-5" />
-            </button>
-
-            <button 
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`p-2 rounded-full transition-all duration-300 ${
-                showFavoritesOnly 
-                  ? 'bg-red-500 text-white shadow-lg shadow-red-900/50'
-                  : 'bg-transparent text-slate-400 hover:text-red-500'
-              }`}
-              title={showFavoritesOnly ? "Показать все истории" : "Показать избранное"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-            </button>
-          </div>
-        </div>
 
         {loading ? (
           <div className="text-center py-20 text-slate-400 dark:text-gray-600 font-bold animate-pulse">Загрузка...</div>
@@ -287,76 +286,6 @@ export default function HomePage() {
           </div>
         )}
       </main>
-
-      {/* ФИЛЬТРЫ ДЛЯ МОБИЛЬНЫХ (fixed внизу экрана) */}
-      <div className="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-around items-center bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-gray-800 p-3 shadow-lg">
-            {/* КНОПКА "ПОПУЛЯРНЫЕ" */}
-            <button 
-              onClick={() => setSortOrder(sortOrder === 'new' ? 'engagement' : 'new')}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                sortOrder === 'engagement' 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-orange-500'
-              }`}
-              title={sortOrder === 'engagement' ? "Сортировка: Новые" : "Сортировка: Популярные"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-            </button>
-            
-            {/* КНОПКА "АКТИВНЫЕ" */}
-            <button 
-              onClick={() => setShowActiveOnly(!showActiveOnly)}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                showActiveOnly 
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-green-500'
-              }`}
-              title={showActiveOnly ? "Показать все" : "Только активные"}
-            >
-              <FaRegClock className="w-5 h-5" />
-            </button>
-            
-            {/* КНОПКА "ИЗБРАННОЕ" */}
-            <button 
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                showFavoritesOnly 
-                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-red-500'
-              }`}
-              title={showFavoritesOnly ? "Показать все" : "Только избранное"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-            </button>
-            
-            {/* КНОПКА "ВСЕ КНИГИ" */}
-            <Link 
-              href="/dashboard" 
-              className="p-3 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-blue-500 transition"
-              title="Все ваши книги"
-            >
-              <svg 
-                className="w-5 h-5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                strokeWidth="2"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ДОБАВЛЯЕМ ОТСТУП ВНИЗУ ДЛЯ МОБИЛЬНЫХ, ЧТОБЫ ФИЛЬТРЫ НЕ ПЕРЕКРЫВАЛИ КОНТЕНТ */}
-      <div className="md:hidden h-16"></div>
     </div>
   );
 }
