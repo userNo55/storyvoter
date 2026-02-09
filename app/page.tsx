@@ -286,59 +286,6 @@ export default function HomePage() {
           </div>
         )}
       </main>
-
-      {/* ТОЛЬКО МОБИЛЬНЫЕ ФИЛЬТРЫ ВНИЗУ - здесь ничего кроме фильтров */}
-      <div className="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-around items-center bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-gray-800 p-3 shadow-lg">
-            {/* КНОПКА "ПОПУЛЯРНЫЕ" */}
-            <button 
-              onClick={() => setSortOrder(sortOrder === 'new' ? 'engagement' : 'new')}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                sortOrder === 'engagement' 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-orange-500'
-              }`}
-              title={sortOrder === 'engagement' ? "Сортировка: Новые" : "Сортировка: Популярные"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-            </button>
-            
-            {/* КНОПКА "АКТИВНЫЕ" */}
-            <button 
-              onClick={() => setShowActiveOnly(!showActiveOnly)}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                showActiveOnly 
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-green-500'
-              }`}
-              title={showActiveOnly ? "Показать все" : "Только активные"}
-            >
-              <FaRegClock className="w-5 h-5" />
-            </button>
-            
-            {/* КНОПКА "ИЗБРАННОЕ" */}
-            <button 
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`p-3 rounded-full transition-all duration-300 ${
-                showFavoritesOnly 
-                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' 
-                  : 'bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-red-500'
-              }`}
-              title={showFavoritesOnly ? "Показать все" : "Только избранное"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ДОБАВЛЯЕМ ОТСТУП ВНИЗУ ДЛЯ МОБИЛЬНЫХ */}
-      <div className="md:hidden h-16"></div>
     </div>
   );
 }
