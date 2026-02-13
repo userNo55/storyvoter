@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import Link from 'next/link';
-// Импортируем новую иконку
 import { FaRegClock } from 'react-icons/fa';
 
 export default function HomePage() {
@@ -89,7 +88,6 @@ export default function HomePage() {
   const displayedStories = showFavoritesOnly 
     ? stories.filter(s => s.favorites && s.favorites.length > 0)
     : stories.filter(story => {
-        // Применяем фильтр активных историй
         if (showActiveOnly && story.is_completed) {
           return false;
         }
@@ -278,7 +276,8 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* МОБИЛЬНЫЕ ФИЛЬТРЫ ВНИЗУ: 3 фильтра + кнопка "Все книги" */}
+      {/* ========== ИЗМЕНЕНИЯ ЗДЕСЬ ========== */}
+      {/* МОБИЛЬНЫЕ ФИЛЬТРЫ ВНИЗУ: 3 фильтра + кнопка "Все книги" + кнопка "Новые главы" */}
       <div className="md:hidden fixed bottom-4 left-0 right-0 z-50 px-4">
         <div className="max-w-md mx-auto">
           <div className="flex justify-around items-center bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-gray-800 p-3 shadow-lg">
@@ -324,8 +323,26 @@ export default function HomePage() {
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </button>
+
+            {/* КНОПКА "НОВЫЕ ГЛАВЫ" (ВТОРАЯ СПРАВА) */}
+            <Link 
+              href="/feed" 
+              className="p-3 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-purple-500 transition"
+              title="Новые главы за 24 часа"
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10"/>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" />
+              </svg>
+            </Link>
             
-            {/* КНОПКА "ВСЕ КНИГИ" */}
+            {/* КНОПКА "ВСЕ КНИГИ" (КРАЙНЯЯ СПРАВА) */}
             <Link 
               href="/dashboard" 
               className="p-3 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-400 hover:text-blue-500 transition"
@@ -344,6 +361,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+      {/* ========== КОНЕЦ ИЗМЕНЕНИЙ ========== */}
 
       {/* ОТСТУП ВНИЗУ ДЛЯ МОБИЛЬНЫХ */}
       <div className="md:hidden h-16"></div>
