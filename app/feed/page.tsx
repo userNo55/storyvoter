@@ -468,30 +468,35 @@ export default function FeedPage() {
           )}
         </div>
 
-        {/* КНОПКИ НАВИГАЦИИ ПО КРАЯМ ЭКРАНА - ПРОСТЫЕ СИМВОЛЫ */}
-        <div className="fixed inset-x-0 bottom-4 flex justify-between items-center px-4 pointer-events-none">
-          {/* Кнопка предыдущая глава */}
-          {currentIndex > 0 && (
+        {/* КНОПКА ПРЕДЫДУЩАЯ ГЛАВА (слева внизу) */}
+        {currentIndex > 0 && (
+          <div className="fixed bottom-4 left-4 z-20">
             <button
               onClick={goToPrev}
-              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+              className="bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition"
               aria-label="Предыдущая глава"
             >
-              ‹
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
             </button>
-          )}
-          
-          {/* Кнопка следующая глава */}
-          {currentIndex < chapters.length - 1 && (
+          </div>
+        )}
+
+        {/* КНОПКА СЛЕДУЮЩАЯ ГЛАВА (справа внизу) - такая же как предыдущая */}
+        {currentIndex < chapters.length - 1 && (
+          <div className="fixed bottom-4 right-4 z-20">
             <button
               onClick={goToNext}
-              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+              className="bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition"
               aria-label="Следующая глава"
             >
-              ›
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
