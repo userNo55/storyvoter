@@ -17,10 +17,7 @@ export default function FeedPage() {
   const [showTooltip, setShowTooltip] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   
-  // ИСПРАВЛЕНО: инициализируем useRef с undefined
   const touchTimer = useRef<NodeJS.Timeout | undefined>(undefined);
-  
-  // ИСПРАВЛЕНО: добавляем флаг для отслеживания двойного тапа
   const lastTapRef = useRef<number>(0);
 
   useEffect(() => {
@@ -71,7 +68,6 @@ export default function FeedPage() {
   const handleDoubleTap = () => {
     if (currentIndex < chapters.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      // Показываем подсказку при первом использовании
       if (!localStorage.getItem('feed_tooltip_shown')) {
         setShowTooltip(true);
         setTimeout(() => setShowTooltip(false), 3000);
@@ -80,27 +76,22 @@ export default function FeedPage() {
     }
   };
 
-  // ИСПРАВЛЕНО: новая логика обработки тапов
   const handleTap = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
     
-    // Проверяем, не был ли клик по интерактивному элементу
     if (target.closest('a, button')) {
       return;
     }
 
     const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300; // 300ms между тапами
+    const DOUBLE_TAP_DELAY = 300;
 
     if (lastTapRef.current && (now - lastTapRef.current) < DOUBLE_TAP_DELAY) {
-      // Это двойной тап
       handleDoubleTap();
-      lastTapRef.current = 0; // Сбрасываем после двойного тапа
+      lastTapRef.current = 0;
     } else {
-      // Это первый тап
       lastTapRef.current = now;
       
-      // Сбрасываем через 300ms если не было второго тапа
       if (touchTimer.current) {
         clearTimeout(touchTimer.current);
       }
@@ -122,7 +113,6 @@ export default function FeedPage() {
     
     const distance = Math.abs(touchEndX - touchStart);
     
-    // Если движение было небольшим (тап, а не свайп)
     if (distance < 10) {
       handleTap(e);
     }
@@ -142,7 +132,6 @@ export default function FeedPage() {
 
     const isFavorite = favorites.has(storyId);
 
-    // Оптимистичное обновление UI
     setFavorites(prev => {
       const newSet = new Set(prev);
       if (isFavorite) {
@@ -153,7 +142,6 @@ export default function FeedPage() {
       return newSet;
     });
 
-    // Запрос к БД
     if (isFavorite) {
       await supabase
         .from('favorites')
@@ -163,6 +151,73 @@ export default function FeedPage() {
       await supabase
         .from('favorites')
         .insert({ user_id: user.id, story_id: storyId });
+    }
+  };
+
+  // Проверка, доступно ли голосование
+  const canVote = (chapter: any) => {
+    if (!user) return false;
+    const now = new Date();
+    const expiresAt = new Date(chapter.expires_at);
+    return expiresAt > now;
+  };
+
+  const handleVote = async (optionId: string, chapterId: string, currentVotes: number) => {
+    if (!user) {
+      router.push('/auth');
+      return;
+    }
+
+    try {
+      // Проверяем, не голосовал ли пользователь уже
+      const { data: existingVote } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('chapter_id', chapterId)
+        .single();
+
+      if (existingVote) {
+        alert('Вы уже голосовали в этой главе');
+        return;
+      }
+
+      // Вставляем голос
+      const { error: voteError } = await supabase
+        .from('votes')
+        .insert({ user_id: user.id, chapter_id: chapterId });
+
+      if (voteError) throw voteError;
+
+      // Обновляем количество голосов в опции
+      const { error: updateError } = await supabase
+        .from('options')
+        .update({ votes: currentVotes + 1 })
+        .eq('id', optionId);
+
+      if (updateError) throw updateError;
+
+      // Обновляем локальное состояние
+      setChapters(prevChapters => 
+        prevChapters.map(ch => {
+          if (ch.id === chapterId) {
+            return {
+              ...ch,
+              options: ch.options.map((opt: any) => 
+                opt.id === optionId 
+                  ? { ...opt, votes: opt.votes + 1 }
+                  : opt
+              )
+            };
+          }
+          return ch;
+        })
+      );
+
+      alert('Голос учтен!');
+    } catch (error) {
+      console.error('Ошибка голосования:', error);
+      alert('Не удалось проголосовать');
     }
   };
 
@@ -189,33 +244,45 @@ export default function FeedPage() {
           <p className="text-slate-500 dark:text-gray-400 mb-6">
             Загляните позже или перейдите в каталог
           </p>
-          <Link 
-            href="/" 
+          <button
+            onClick={() => router.back()}
             className="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl font-bold"
           >
-            На главную
-          </Link>
+            Вернуться назад
+          </button>
         </div>
       </div>
     );
   }
 
   const currentChapter = chapters[currentIndex];
+  const isVoteActive = canVote(currentChapter);
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A]">
-      {/* Индикатор прогресса */}
+      {/* ВЕРХНЯЯ ПАНЕЛЬ С КНОПКОЙ НАЗАД И ПРОГРЕССОМ */}
       <div className="sticky top-0 z-10 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-sm border-b border-slate-200 dark:border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="text-sm font-medium text-slate-600 dark:text-gray-400">
-            {currentIndex + 1} / {chapters.length}
-          </div>
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-slate-600 dark:text-gray-400 hover:text-blue-600 transition"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span className="text-sm font-medium">Назад</span>
+          </button>
+          
           <div className="flex items-center gap-2">
-            <span className="text-xs text-blue-600 dark:text-blue-400">
-              Двойной тап → след. глава
+            <span className="text-sm font-medium text-slate-600 dark:text-gray-400">
+              {currentIndex + 1} / {chapters.length}
+            </span>
+            <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
+              Двойной тап → след.
             </span>
           </div>
         </div>
+        
         {/* Прогресс-бар */}
         <div className="h-1 bg-slate-100 dark:bg-gray-800">
           <div 
@@ -240,7 +307,7 @@ export default function FeedPage() {
         )}
 
         {/* Шапка с информацией об авторе и истории */}
-        <div className="sticky top-[57px] z-10 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-slate-200 dark:border-gray-800 px-4 py-3">
+        <div className="sticky top-[73px] z-10 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-slate-200 dark:border-gray-800 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               {/* Аватар автора */}
@@ -265,7 +332,7 @@ export default function FeedPage() {
                 href={`/story/${currentChapter.story.id}`}
                 className="flex items-center gap-1 flex-1 group"
               >
-                <span className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">
+                <span className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition line-clamp-1">
                   {currentChapter.story.title}
                 </span>
                 <svg 
@@ -275,7 +342,7 @@ export default function FeedPage() {
                   fill="none" 
                   stroke="currentColor" 
                   strokeWidth="2.5"
-                  className="text-slate-400 group-hover:text-blue-600 transition"
+                  className="text-slate-400 group-hover:text-blue-600 transition flex-shrink-0"
                 >
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -285,7 +352,7 @@ export default function FeedPage() {
             {/* Сердечко избранного */}
             <button
               onClick={(e) => toggleFavorite(e, currentChapter.story.id)}
-              className={`p-2 transition-colors ${
+              className={`p-2 transition-colors flex-shrink-0 ${
                 favorites.has(currentChapter.story.id) 
                   ? 'text-red-500' 
                   : 'text-slate-300 dark:text-gray-600 hover:text-red-400'
@@ -314,7 +381,7 @@ export default function FeedPage() {
           
           {/* Текст главы */}
           <div className="prose prose-slate dark:prose-invert max-w-none">
-            {currentChapter.content.split('\n').map((paragraph: string, i: number) => (
+            {currentChapter.content?.split('\n').map((paragraph: string, i: number) => (
               <p key={i} className="mb-4 text-slate-700 dark:text-gray-300 leading-relaxed">
                 {paragraph}
               </p>
@@ -324,33 +391,72 @@ export default function FeedPage() {
           {/* Вопрос для голосования (если есть) */}
           {currentChapter.question_text && (
             <div className="mt-8 p-6 bg-slate-50 dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800">
-              <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">
-                {currentChapter.question_text}
-              </h3>
-              <div className="space-y-3">
-                {currentChapter.options?.map((opt: any) => (
-                  <button
-                    key={opt.id}
-                    className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
-                    disabled
-                  >
-                    <span className="text-slate-900 dark:text-white">{opt.text}</span>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  {currentChapter.question_text}
+                </h3>
+                {!isVoteActive && (
+                  <span className="text-xs text-slate-500 dark:text-gray-400 bg-slate-200 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    Голосование завершено
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-4 text-center">
-                Голосование доступно на странице истории
-              </p>
+              
+              <div className="space-y-3">
+                {currentChapter.options?.map((opt: any) => {
+                  const percentage = currentChapter.options.reduce((sum: number, o: any) => sum + o.votes, 0) > 0
+                    ? Math.round((opt.votes / currentChapter.options.reduce((sum: number, o: any) => sum + o.votes, 0)) * 100)
+                    : 0;
+
+                  return (
+                    <div key={opt.id} className="space-y-1">
+                      <button
+                        onClick={() => handleVote(opt.id, currentChapter.id, opt.votes)}
+                        disabled={!isVoteActive}
+                        className="relative w-full text-left p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden transition-all disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-gray-700"
+                      >
+                        {/* Прогресс-бар голосов */}
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-blue-500/20 dark:bg-blue-500/30 transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
+                        
+                        <div className="relative flex justify-between items-center z-10">
+                          <span className="text-slate-900 dark:text-white">{opt.text}</span>
+                          <span className="text-sm font-medium text-slate-500 dark:text-gray-400">
+                            {opt.votes} голосов
+                          </span>
+                        </div>
+                      </button>
+                      
+                      {/* Процент для наглядности */}
+                      {percentage > 0 && (
+                        <div className="text-xs text-right text-slate-500 dark:text-gray-400 px-2">
+                          {percentage}%
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!user && isVoteActive && (
+                <p className="text-center text-xs text-slate-500 dark:text-gray-400 mt-4">
+                  <Link href="/auth" className="text-blue-600 dark:text-blue-400 font-bold underline">
+                    Войдите
+                  </Link>, чтобы голосовать
+                </p>
+              )}
             </div>
           )}
         </div>
 
         {/* Кнопка для перехода к следующей главе (вручную) */}
         {currentIndex < chapters.length - 1 && (
-          <div className="sticky bottom-20 flex justify-center px-4 pb-4">
+          <div className="sticky bottom-4 flex justify-center px-4 pb-4">
             <button
               onClick={() => setCurrentIndex(prev => prev + 1)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-blue-700 transition"
             >
               <span>Следующая глава</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -359,34 +465,6 @@ export default function FeedPage() {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Нижняя навигация (мобильная) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#0A0A0A] border-t border-slate-200 dark:border-gray-800 px-6 py-3">
-        <div className="flex justify-around items-center">
-          <Link href="/" className="flex flex-col items-center text-slate-400 dark:text-gray-600">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            </svg>
-            <span className="text-xs mt-1">Главная</span>
-          </Link>
-          
-          <Link href="/feed" className="flex flex-col items-center text-blue-600 dark:text-blue-400">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 8v4l3 3"/>
-            </svg>
-            <span className="text-xs mt-1">Новое</span>
-          </Link>
-          
-          <Link href="/profile" className="flex flex-col items-center text-slate-400 dark:text-gray-600">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span className="text-xs mt-1">Профиль</span>
-          </Link>
-        </div>
       </div>
     </div>
   );
