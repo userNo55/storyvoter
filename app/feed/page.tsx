@@ -64,15 +64,26 @@ export default function FeedPage() {
     loadFeed();
   }, []);
 
-  // Обработка двойного тапа для перехода к следующей главе
-  const handleDoubleTap = () => {
+  // Обработка навигации
+  const goToNext = () => {
     if (currentIndex < chapters.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      if (!localStorage.getItem('feed_tooltip_shown')) {
-        setShowTooltip(true);
-        setTimeout(() => setShowTooltip(false), 3000);
-        localStorage.setItem('feed_tooltip_shown', 'true');
-      }
+    }
+  };
+
+  const goToPrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  // Обработка двойного тапа для перехода к следующей главе
+  const handleDoubleTap = () => {
+    goToNext();
+    if (!localStorage.getItem('feed_tooltip_shown')) {
+      setShowTooltip(true);
+      setTimeout(() => setShowTooltip(false), 3000);
+      localStorage.setItem('feed_tooltip_shown', 'true');
     }
   };
 
@@ -112,8 +123,18 @@ export default function FeedPage() {
     setTouchEnd(touchEndX);
     
     const distance = Math.abs(touchEndX - touchStart);
+    const swipeThreshold = 50;
     
-    if (distance < 10) {
+    // Обработка свайпов для навигации
+    if (distance > swipeThreshold) {
+      if (touchEndX < touchStart) {
+        // Свайп влево - следующая глава
+        goToNext();
+      } else {
+        // Свайп вправо - предыдущая глава
+        goToPrev();
+      }
+    } else if (distance < 10) {
       handleTap(e);
     }
     
@@ -278,7 +299,7 @@ export default function FeedPage() {
               {currentIndex + 1} / {chapters.length}
             </span>
             <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
-              Двойной тап → след.
+              Свайп ← →
             </span>
           </div>
         </div>
@@ -302,7 +323,7 @@ export default function FeedPage() {
         {/* Подсказка при первом использовании */}
         {showTooltip && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-20 bg-blue-600 text-white px-4 py-2 rounded-full text-sm shadow-lg animate-bounce">
-            👆 Двойной тап для следующей главы
+            👆 Двойной тап или свайп для навигации
           </div>
         )}
 
@@ -373,7 +394,7 @@ export default function FeedPage() {
         </div>
 
         {/* Контент главы */}
-        <div className="px-4 py-6 pb-20">
+        <div className="px-4 py-6 pb-24">
           {/* Заголовок главы */}
           <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">
             Глава {currentChapter.chapter_number}: {currentChapter.title}
@@ -404,8 +425,9 @@ export default function FeedPage() {
               
               <div className="space-y-3">
                 {currentChapter.options?.map((opt: any) => {
-                  const percentage = currentChapter.options.reduce((sum: number, o: any) => sum + o.votes, 0) > 0
-                    ? Math.round((opt.votes / currentChapter.options.reduce((sum: number, o: any) => sum + o.votes, 0)) * 100)
+                  const totalVotes = currentChapter.options.reduce((sum: number, o: any) => sum + o.votes, 0);
+                  const percentage = totalVotes > 0
+                    ? Math.round((opt.votes / totalVotes) * 100)
                     : 0;
 
                   return (
@@ -416,25 +438,20 @@ export default function FeedPage() {
                         className="relative w-full text-left p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden transition-all disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-gray-700"
                       >
                         {/* Прогресс-бар голосов */}
-                        <div 
-                          className="absolute top-0 left-0 h-full bg-blue-500/20 dark:bg-blue-500/30 transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
+                        {totalVotes > 0 && (
+                          <div 
+                            className="absolute top-0 left-0 h-full bg-blue-500/20 dark:bg-blue-500/30 transition-all"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        )}
                         
                         <div className="relative flex justify-between items-center z-10">
                           <span className="text-slate-900 dark:text-white">{opt.text}</span>
                           <span className="text-sm font-medium text-slate-500 dark:text-gray-400">
-                            {opt.votes} голосов
+                            {opt.votes} голосов {percentage > 0 && `(${percentage}%)`}
                           </span>
                         </div>
                       </button>
-                      
-                      {/* Процент для наглядности */}
-                      {percentage > 0 && (
-                        <div className="text-xs text-right text-slate-500 dark:text-gray-400 px-2">
-                          {percentage}%
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -451,20 +468,30 @@ export default function FeedPage() {
           )}
         </div>
 
-        {/* Кнопка для перехода к следующей главе (вручную) */}
-        {currentIndex < chapters.length - 1 && (
-          <div className="sticky bottom-4 flex justify-center px-4 pb-4">
+        {/* КНОПКИ НАВИГАЦИИ ПО КРАЯМ ЭКРАНА - ПРОСТЫЕ СИМВОЛЫ */}
+        <div className="fixed inset-x-0 bottom-4 flex justify-between items-center px-4 pointer-events-none">
+          {/* Кнопка предыдущая глава */}
+          {currentIndex > 0 && (
             <button
-              onClick={() => setCurrentIndex(prev => prev + 1)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-blue-700 transition"
+              onClick={goToPrev}
+              className="pointer-events-auto w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-4xl font-light"
+              aria-label="Предыдущая глава"
             >
-              <span>Следующая глава</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
+              ‹
             </button>
-          </div>
-        )}
+          )}
+          
+          {/* Кнопка следующая глава */}
+          {currentIndex < chapters.length - 1 && (
+            <button
+              onClick={goToNext}
+              className="pointer-events-auto w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-4xl font-light ml-auto"
+              aria-label="Следующая глава"
+            >
+              ›
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
