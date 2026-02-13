@@ -291,7 +291,7 @@ export default function FeedPage() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
-            <span className="text-sm font-medium">Назад</span>
+            <span className="text-sm font-medium"></span>
           </button>
           
           <div className="flex items-center gap-2">
@@ -474,7 +474,7 @@ export default function FeedPage() {
           {currentIndex > 0 && (
             <button
               onClick={goToPrev}
-              className="pointer-events-auto w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-4xl font-light"
+              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
               aria-label="Предыдущая глава"
             >
               ‹
@@ -485,7 +485,7 @@ export default function FeedPage() {
           {currentIndex < chapters.length - 1 && (
             <button
               onClick={goToNext}
-              className="pointer-events-auto w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 text-4xl font-light ml-auto"
+              className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
               aria-label="Следующая глава"
             >
               ›
