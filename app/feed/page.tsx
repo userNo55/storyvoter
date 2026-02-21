@@ -421,7 +421,7 @@ export default function FeedPage() {
               {/* Сообщение после голосования */}
               {hasVoted && (
                 <p className="text-center text-xs text-slate-500 dark:text-gray-400 mt-4">
-                  Дополнительное голосование доступно на основной странице истории
+                  Дополнительное голосование доступно на странице истории
                 </p>
               )}
 
