@@ -36,6 +36,7 @@ export default function HomePage() {
         chapters(id, expires_at, chapter_number),
         favorites(user_id)
       `)
+      .limit(20)
       .filter('favorites.user_id', 'eq', user?.id || '00000000-0000-0000-0000-000000000000');
 
     if (sortOrder === 'new') {
